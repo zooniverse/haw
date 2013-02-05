@@ -1,0 +1,46 @@
+#!/usr/bin/env coffee
+
+optimist = require 'optimist'
+defaults = require '../lib/defaults'
+
+optimist.usage '''
+  Usage:
+    haw build --config ./package.json --output ./build
+    haw serve --port 1234
+'''
+
+options = optimist.options({
+  config: alias: 'c', description: 'Configuration file'
+  root: alias: 'r', description: 'Root from which to look for files'
+  output: alias: 'o', description: 'Directory in which to output the site'
+  port: alias: 'p', description: 'Port on which to run the server'
+}).argv
+
+[command, commandArgs...] = options._
+
+config = try require options.config
+
+if typeof config is 'function'
+  clone = require 'clone'
+  targetConfig = clone defaults
+  config.call targetConfig, options
+  config = targetConfig
+
+config ?= {}
+
+config[option] = value for option, value of options when option of defaults
+
+switch command
+  when 'serve', 'server'
+    Server = require '../lib/server'
+    [port] = commandArgs
+    (new Server config).serve port, options
+
+  when 'build', 'builder'
+    Builder = require '../lib/builder'
+    [output] = commandArgs
+    (new Builder config).build output, options
+
+  else
+    optimist.showHelp()
+    process.exit()
