@@ -15,11 +15,9 @@ class Builder
   build: (output, options = {}) ->
     output = path.resolve output || options.output || @output
 
-    # Delete existing and create new output dir
     wrench.rmdirSyncRecursive output if fs.existsSync output
     wrench.mkdirSyncRecursive output
 
-    # Copy and merge public dirs into output dir
     for entry, exit of @static
       entry = path.resolve @root, entry
       exit = path.resolve output, exit
@@ -31,9 +29,10 @@ class Builder
     for entry, exit of @js
       entry = path.resolve @root, entry
       exit = path.resolve output, exit
-      js = resolveJs entry, @compilers
+      js = resolveJs entry, {@libs, @compilers}
       min = @minifiers.js js
       fs.writeFileSync exit, min
+      # TODO: Change file name, change reference in HTML files
 
     for entry, exit of @css
       entry = path.resolve @root, entry
@@ -41,5 +40,7 @@ class Builder
       css = renderStylus entry
       min =  @minifiers.css css
       fs.writeFileSync exit, min
+      # TODO: Change file name, change reference in HTML files
+
 
 module.exports = Builder

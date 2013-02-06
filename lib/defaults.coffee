@@ -5,18 +5,20 @@ cleanCSS = require 'clean-css'
 defaults =
   root: '.'
 
-  output: './build'
-
   port: 2217
+
+  output: './build'
 
   static:
     './public': '.'
 
   js:
-    './js/main.coffee': './application.js'
+    './app/index.coffee': './application.js'
+
+  libs: []
 
   css:
-    './css/main.styl': './application.css'
+    './css/index.styl': './application.css'
 
   compilers:
     '.eco': ->

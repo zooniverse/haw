@@ -2,6 +2,7 @@
 
 optimist = require 'optimist'
 defaults = require '../lib/defaults'
+path = require 'path'
 
 optimist.usage '''
   Usage:
@@ -19,6 +20,7 @@ options = optimist.options({
 [command, commandArgs...] = options._
 
 config = try require options.config
+config ?= try require path.resolve options.root, 'slug' # TODO: Resolve from root
 
 if typeof config is 'function'
   clone = require 'clone'

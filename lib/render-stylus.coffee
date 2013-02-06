@@ -11,6 +11,10 @@ renderStylus = (filename) ->
     nib.path
   ]
 
+  styl.set 'include css', true
+
+  styl.set 'compress', false
+
   styl.import 'nib'
 
   styl.render()
