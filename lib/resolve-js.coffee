@@ -11,6 +11,8 @@ resolveJs = (filename, options = {}) ->
 
   bundle.debug = options.debug
 
+  bundle.exports = ['require']
+
   for ext, compiler of options.compilers || {}
     bundle.register ext, compiler
 

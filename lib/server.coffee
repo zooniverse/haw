@@ -22,7 +22,7 @@ class Server
       requestUrl = path.sep + path.relative '.', exit
       server.get requestUrl, (req, res, next) =>
         filename = path.resolve @root, entry
-        js = resolveJs filename, {@libs, @compilers}
+        js = resolveJs filename, {@libs, @compilers, debug: true}
         res.contentType 'application/javascript'
         res.send js
 
