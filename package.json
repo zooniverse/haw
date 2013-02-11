@@ -1,6 +1,9 @@
 {
   "name": "haw",
-  "version": "0.0.1",
+  "version": "0.0.2",
+  "bin": {
+    "haw": "./bin/haw"
+  },
   "dependencies": {
     "browserify": "~1.17.3",
     "clean-css": "~0.9.1",
