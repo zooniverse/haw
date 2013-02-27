@@ -23,6 +23,7 @@ class Builder
       entry = path.resolve @root, entry
       exit = path.resolve output, exit
       console.log "Copying #{path.relative '.', entry} -> #{path.relative '.', exit}"
+
       wrench.copyDirSyncRecursive entry, exit
 
     # TODO: Losslessly compress images.
@@ -30,6 +31,8 @@ class Builder
     for entry, exit of @js
       entry = path.resolve @root, entry
       exit = path.resolve output, exit
+      console.log "Bundling JavaScript #{path.relative '.', entry} -> #{path.relative '.', exit}"
+
       js = resolveJs entry, {@libs, @compilers}
       min = @minifiers.js js
       fs.writeFileSync exit, min
@@ -38,6 +41,8 @@ class Builder
     for entry, exit of @css
       entry = path.resolve @root, entry
       exit = path.resolve output, exit
+      console.log "Bundling CSS #{path.relative '.', entry} -> #{path.relative '.', exit}"
+
       css = renderStylus entry
       min =  @minifiers.css css
       fs.writeFileSync exit, min
