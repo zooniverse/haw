@@ -9,6 +9,8 @@ defaults =
 
   output: './build'
 
+  version: true
+
   static:
     './public': '.'
 

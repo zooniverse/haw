@@ -1,6 +1,6 @@
 {
   "name": "haw",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "bin": {
     "haw": "./bin/haw"
   },
@@ -14,6 +14,7 @@
     "express": "~3.1.0",
     "express-prettylogger": "~0.1.2",
     "nib": "~0.9.1",
+    "node-version-assets": "~0.0.6",
     "optimist": "~0.3.5",
     "stylus": "~0.32.0",
     "uglify-js": "~2.2.4",

@@ -6,6 +6,7 @@ wrench = require 'wrench'
 fs = require 'fs'
 resolveJs = require './resolve-js'
 renderStylus = require './render-stylus'
+Version = require 'node-version-assets'
 
 class Builder
   constructor: (params = {}) ->
@@ -26,7 +27,12 @@ class Builder
 
       wrench.copyDirSyncRecursive entry, exit
 
+    htmlFiles = for file in wrench.readdirSyncRecursive output when file.match /\.html?$/
+      path.resolve output, file
+
     # TODO: Losslessly compress images.
+
+    assets = []
 
     for entry, exit of @js
       entry = path.resolve @root, entry
@@ -36,7 +42,7 @@ class Builder
       js = resolveJs entry, {@libs, @compilers}
       min = @minifiers.js js
       fs.writeFileSync exit, min
-      # TODO: Change file name, change reference in HTML files
+      assets.push exit
 
     for entry, exit of @css
       entry = path.resolve @root, entry
@@ -46,7 +52,13 @@ class Builder
       css = renderStylus entry
       min =  @minifiers.css css
       fs.writeFileSync exit, min
-      # TODO: Change file name, change reference in HTML files
+      assets.push exit
 
+    if @version
+      version = new Version
+        assets: assets
+        grepFiles: htmlFiles
+
+      version.run()
 
 module.exports = Builder
