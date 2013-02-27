@@ -15,7 +15,8 @@ class Builder
   build: (output, options = {}) ->
     output = path.resolve output || options.output || @output
 
-    wrench.rmdirSyncRecursive output if fs.existsSync output
+    throw new Error "#{output} already exists" if fs.existsSync output
+
     wrench.mkdirSyncRecursive output
 
     for entry, exit of @static
