@@ -52,9 +52,8 @@ class Builder
       exit = path.resolve output, exit
       console.log "Bundling CSS #{path.relative '.', entry} -> #{path.relative '.', exit}"
 
-      css = renderStylus entry
-      min =  @minifiers.css css
-      fs.writeFileSync exit, min
+      css = renderStylus entry, {@nib, @includeImported, @compressCss}
+      fs.writeFileSync exit, css
       versionedAssets.push exit
 
     if @version

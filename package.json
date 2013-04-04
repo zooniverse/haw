@@ -6,7 +6,6 @@
   },
   "dependencies": {
     "browserify": "~1.17.3",
-    "clean-css": "~0.9.1",
     "clone": "~0.1.5",
     "coffee-script": "~1.4.0",
     "deep-extend": "~0.2.5",

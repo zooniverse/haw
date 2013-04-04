@@ -26,7 +26,7 @@ class Server
 
       console.log "Will generate \"#{requestUrl}\" from #{localFile}"
 
-      server.get requestUrl, (req, res, next) =>
+      server.get requestUrl, (req, res) =>
         js = resolveJs localFile, {@libs, @compilers, debug: true}
         res.contentType 'application/javascript'
         res.send js
@@ -37,8 +37,8 @@ class Server
 
       console.log "Will generate \"#{requestUrl}\" from #{localFile}"
 
-      server.get requestUrl, (req, res, next) =>
-        css = renderStylus localFile
+      server.get requestUrl, (req, res) =>
+        css = renderStylus localFile, {@nib, @includeImportedCss, compressCss: false}
         res.contentType 'text/css'
         res.send css
 

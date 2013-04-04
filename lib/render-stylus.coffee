@@ -3,19 +3,18 @@ path = require 'path'
 stylus = require 'stylus'
 nib = require 'nib'
 
-renderStylus = (filename) ->
+renderStylus = (filename, options = {}) ->
   styl = stylus "#{fs.readFileSync filename}"
 
-  styl.set 'paths', [
-    path.dirname filename
-    nib.path
-  ]
+  styl.include path.dirname filename
 
-  styl.set 'include css', true
+  styl.set 'include css', options.includeImportedCss
 
-  styl.set 'compress', false
+  styl.set 'compress', options.compressCss
 
-  styl.import 'nib'
+  if options.nib
+    styl.include nib.path
+    styl.import 'nib'
 
   styl.render()
 
