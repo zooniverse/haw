@@ -27,12 +27,15 @@ class Builder
 
       wrench.copyDirSyncRecursive entry, exit
 
-    htmlFiles = for file in wrench.readdirSyncRecursive output when file.match /\.html?$/
-      path.resolve output, file
+    htmlFiles = []
+    imageFiles = []
 
-    # TODO: Losslessly compress images.
+    for file in wrench.readdirSyncRecursive output
+      file = path.resolve output, file
+      htmlFiles.push file if file.match /\.html?$/i
+      imageFiles.push file if file.match /\.jpe?g|\.png$/i
 
-    assets = []
+    versionedAssets = []
 
     for entry, exit of @js
       entry = path.resolve @root, entry
@@ -42,7 +45,7 @@ class Builder
       js = resolveJs entry, {@libs, @compilers}
       min = @minifiers.js js
       fs.writeFileSync exit, min
-      assets.push exit
+      versionedAssets.push exit
 
     for entry, exit of @css
       entry = path.resolve @root, entry
@@ -52,11 +55,11 @@ class Builder
       css = renderStylus entry
       min =  @minifiers.css css
       fs.writeFileSync exit, min
-      assets.push exit
+      versionedAssets.push exit
 
     if @version
       version = new Version
-        assets: assets
+        assets: versionedAssets
         grepFiles: htmlFiles
 
       version.run()
