@@ -18,27 +18,36 @@ class Server
     server = express()
     server.use express.logger 'pretty'
 
+    console.log "Haw starting a server on port #{port}."
+
     for entry, exit of @js then do (entry, exit) =>
       requestUrl = path.sep + path.relative '.', exit
+      localFile = path.resolve @root, entry
+
+      console.log "Will generate \"#{requestUrl}\" from #{localFile}"
+
       server.get requestUrl, (req, res, next) =>
-        filename = path.resolve @root, entry
-        js = resolveJs filename, {@libs, @compilers, debug: true}
+        js = resolveJs localFile, {@libs, @compilers, debug: true}
         res.contentType 'application/javascript'
         res.send js
 
     for entry, exit of @css then do (entry, exit) =>
       requestUrl = path.sep + path.relative '.', exit
+      localFile = path.resolve @root, entry
+
+      console.log "Will generate \"#{requestUrl}\" from #{localFile}"
+
       server.get requestUrl, (req, res, next) =>
-        filename = path.resolve @root, entry
-        css = renderStylus filename
+        css = renderStylus localFile
         res.contentType 'text/css'
         res.send css
 
     for entry, exit of @static
       prefix = path.sep + path.relative '.', exit
-      server.use prefix, express.static path.resolve @root, entry
+      local = path.resolve @root, entry
+      server.use prefix, express.static local
+      console.log "Will serve static \"#{prefix}\" from #{local}"
 
-    console.log "Server listening on port #{port}"
     server.listen port
 
     server
