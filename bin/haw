@@ -17,6 +17,8 @@ options = optimist.options({
   root: alias: 'r', description: 'Root from which to look for files'
   output: alias: 'o', description: 'Directory in which to output the site'
   port: alias: 'p', description: 'Port on which to run the server'
+  version: alias: 'v', description: 'Print the version number'
+  help: alias: 'h', description: 'Print some help'
 }).argv
 
 [command, commandArgs...] = options._
@@ -34,6 +36,9 @@ config ?= {}
 
 config[option] = value for option, value of options when option of defaults
 
+command = 'version' if options.version
+command = 'help' if options.help
+
 switch command
   when 'serve', 'server'
     Server = require '../lib/server'
@@ -45,6 +50,11 @@ switch command
     [output] = commandArgs
     (new Builder config).build output, options
 
+  when 'help'
+    optimist.showHelp() # TODO
+
+  when 'version'
+    console.log (require path.join __dirname, '..', 'package').version
+
   else
     optimist.showHelp()
-    process.exit()
