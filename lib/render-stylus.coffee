@@ -8,7 +8,7 @@ renderStylus = (filename, options = {}) ->
 
   styl.include path.dirname filename
 
-  styl.set 'include css', options.includeImportedCss
+  styl.set 'include css', options.includeCss
 
   styl.set 'compress', options.compressCss
 

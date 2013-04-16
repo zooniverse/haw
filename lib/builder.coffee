@@ -52,7 +52,7 @@ class Builder
       exit = path.resolve output, exit
       console.log "Bundling CSS #{path.relative '.', entry} -> #{path.relative '.', exit}"
 
-      css = renderStylus entry, {@nib, @includeImported, @compressCss}
+      css = renderStylus entry, {@nib, @includeCss, @compressCss}
       fs.writeFileSync exit, css
       versionedAssets.push exit
 

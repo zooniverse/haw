@@ -24,7 +24,7 @@ defaults =
     './css/index.styl': './application.css'
 
   nib: true
-  includeImportedCss: true
+  includeCss: true
   compressCss: false
 
   minifiers:
