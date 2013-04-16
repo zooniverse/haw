@@ -38,7 +38,7 @@ class Server
       console.log "Will generate \"#{requestUrl}\" from #{localFile}"
 
       server.get requestUrl, (req, res) =>
-        css = renderStylus localFile, {@nib, @includeImportedCss, compressCss: false}
+        css = renderStylus localFile, {@nib, @includeCss, compressCss: false}
         res.contentType 'text/css'
         res.send css
 
