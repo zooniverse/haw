@@ -4,7 +4,7 @@ fs = require 'fs'
 
 try
   require.resolve 'webmake-eco'
-catch (e)
+catch e
   console.log '''
     You need to fake out a "webmake-eco" module. I am so sorry. Try this:
     mkdir node_modules/webmake-eco
