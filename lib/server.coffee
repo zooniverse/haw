@@ -27,9 +27,9 @@ class Server
       console.log "Will generate \"#{requestUrl}\" from #{localFile}"
 
       server.get requestUrl, (req, res) =>
-        js = resolveJs localFile, {@libs, @compilers, debug: true}
-        res.contentType 'application/javascript'
-        res.send js
+        js = resolveJs localFile, {@libs, @compilers, sourceMap: true}, (error, content) =>
+          res.contentType 'application/javascript'
+          res.send content
 
     for entry, exit of @css then do (entry, exit) =>
       requestUrl = path.sep + path.relative '.', exit

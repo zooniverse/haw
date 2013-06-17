@@ -1,25 +1,17 @@
-browserify = require 'browserify'
+webmake = require 'webmake'
+require 'webmake-coffee'
 path = require 'path'
 fs = require 'fs'
 
-resolveJs = (filename, options = {}) ->
+resolveJs = (filename, options = {}, callback) ->
   libs = for file in options.libs || []
     file = path.resolve file
     "#{fs.readFileSync file};"
 
-  bundle = browserify()
-
-  bundle.debug = options.debug
-
-  bundle.exports = ['require']
-
-  for ext, compiler of options.compilers || {}
-    bundle.register ext, compiler
-
-  bundle.addEntry filename
-
-  js = bundle.bundle()
-
-  (libs.join '\n\n') + js
+  webmake filename,
+    ext: ['coffee']
+    sourceMap: options.sourceMap
+    (error, js) ->
+      callback error, (libs.join '\n\n') + js
 
 module.exports = resolveJs

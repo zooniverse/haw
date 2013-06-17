@@ -42,25 +42,25 @@ class Builder
       exit = path.resolve output, exit
       console.log "Bundling JavaScript #{path.relative '.', entry} -> #{path.relative '.', exit}"
 
-      js = resolveJs entry, {@libs, @compilers}
-      min = @minifiers.js js
-      fs.writeFileSync exit, min
-      versionedAssets.push exit
+      resolveJs entry, {@libs, @compilers}, (error, js) =>
+        min = @minifiers.js js
+        fs.writeFileSync exit, min
+        versionedAssets.push exit
 
-    for entry, exit of @css
-      entry = path.resolve @root, entry
-      exit = path.resolve output, exit
-      console.log "Bundling CSS #{path.relative '.', entry} -> #{path.relative '.', exit}"
+        for entry, exit of @css
+          entry = path.resolve @root, entry
+          exit = path.resolve output, exit
+          console.log "Bundling CSS #{path.relative '.', entry} -> #{path.relative '.', exit}"
 
-      css = renderStylus entry, {@nib, @includeCss, @compressCss}
-      fs.writeFileSync exit, css
-      versionedAssets.push exit
+          css = renderStylus entry, {@nib, @includeCss, @compressCss}
+          fs.writeFileSync exit, css
+          versionedAssets.push exit
 
-    if @version
-      version = new Version
-        assets: versionedAssets
-        grepFiles: htmlFiles
+        if @version
+          version = new Version
+            assets: versionedAssets
+            grepFiles: htmlFiles
 
-      version.run()
+          version.run()
 
 module.exports = Builder
