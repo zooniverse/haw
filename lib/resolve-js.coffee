@@ -11,6 +11,7 @@ resolveJs = (filename, options = {}, callback) ->
   webmake filename,
     ext: ['coffee', webmakeEco]
     sourceMap: options.sourceMap
+    ignoreErrors: true
     (error, js) ->
       callback error, (libs.join '\n\n') + js
 
