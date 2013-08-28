@@ -1,66 +1,47 @@
-defaults = require './defaults'
-clone = require 'clone'
-deepExtend = require 'deep-extend'
+Configurable = require './configurable'
 path = require 'path'
-wrench = require 'wrench'
 fs = require 'fs'
-resolveJs = require './resolve-js'
-renderStylus = require './render-stylus'
-Version = require 'node-version-assets'
+wrench = require 'wrench'
+dotPrefix = require './dot-prefix'
+glob = require 'glob'
 
-class Builder
-  constructor: (params = {}) ->
-    @[property] = value for property, value of clone defaults
-    deepExtend @, params
-
+class Builder extends Configurable
   build: (output, options = {}) ->
-    output = path.resolve output || options.output || @output
+    output = path.resolve process.cwd(), output || options.output || @output
 
-    throw new Error "#{output} already exists" if fs.existsSync output
+    if fs.existsSync output
+      @emit 'debug', "#{output} already exists!"
+      if @force
+        @emit 'log', 'Deleting existing build output directory'
+        wrench.rmdirSyncRecursive output
+      else
+        throw new Error "#{output} already exists"
 
+    @emit 'log', "Creating output directory #{dotPrefix output}"
     wrench.mkdirSyncRecursive output
 
-    for entry, exit of @static
-      entry = path.resolve @root, entry
-      exit = path.resolve output, exit
-      console.log "Copying #{path.relative '.', entry} -> #{path.relative '.', exit}"
+    for source, destination of @mount
+      source = path.resolve @root, source
+      destination = path.resolve process.cwd(), output, "./#{destination}"
+      @emit 'debug', "Will copy aliased source #{source} to #{destination}"
+      continue unless fs.existsSync source
 
-      wrench.copyDirSyncRecursive entry, exit
+      @emit 'log', "Copying #{dotPrefix source} to #{dotPrefix destination}"
+      wrench.copyDirSyncRecursive source, destination
 
-    htmlFiles = []
-    imageFiles = []
+    for generatedFile, sourceFile of @generate
+      generatedFile = path.resolve process.cwd(), output, "./#{generatedFile}"
+      sourceFile = path.resolve @root, sourceFile
+      @emit 'debug', "Will generate #{generatedFile} from #{sourceFile}"
+      continue unless fs.existsSync sourceFile
 
-    for file in wrench.readdirSyncRecursive output
-      file = path.resolve output, file
-      htmlFiles.push file if file.match /\.html?$/i
-      imageFiles.push file if file.match /\.jpe?g|\.png$/i
+      @emit 'log', "Generating #{dotPrefix generatedFile} from #{dotPrefix sourceFile}"
 
-    versionedAssets = []
+    for pattern, optimizer of @optimize
+      files = glob.sync path.resolve output, "./#{pattern}"
+      @emit 'debug', "Will optimize globbed pattern \"#{pattern}\" (#{files.length} files)"
 
-    for entry, exit of @js
-      entry = path.resolve @root, entry
-      exit = path.resolve output, exit
-      console.log "Bundling JavaScript #{path.relative '.', entry} -> #{path.relative '.', exit}"
-
-      resolveJs entry, {@libs, @compilers}, (error, js) =>
-        min = @minifiers.js js
-        fs.writeFileSync exit, min
-        versionedAssets.push exit
-
-        for entry, exit of @css
-          entry = path.resolve @root, entry
-          exit = path.resolve output, exit
-          console.log "Bundling CSS #{path.relative '.', entry} -> #{path.relative '.', exit}"
-
-          css = renderStylus entry, {@nib, @includeCss, @compressCss}
-          fs.writeFileSync exit, css
-          versionedAssets.push exit
-
-        if @version
-          version = new Version
-            assets: versionedAssets
-            grepFiles: htmlFiles
-
-          version.run()
+      for file in files
+        @emit 'log', "Optimizing #{dotPrefix file}"
 
 module.exports = Builder

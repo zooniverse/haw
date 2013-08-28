@@ -16,7 +16,8 @@ options = optimist.options({
   c: alias: 'config', description: 'Configuration file'
   r: alias: 'root', description: 'Root from which to look for files'
   p: alias: 'port', description: 'Port on which to run the server'
-  o: alias: 'output', description: 'Directory in which to output the site'
+  o: alias: 'output', description: 'Directory in which to build the site'
+  f: alias: 'force', description: 'Overwrite any existing output directory'
   q: alias: 'quiet', description: 'Don\'t show any working info'
   d: alias: 'debug', description: 'Show lots of working info'
   v: alias: 'version', description: 'Print the version number'
@@ -30,15 +31,14 @@ command = 'version' if options.version
 
 switch command
   when 's', 'serve', 'server'
-    [port] = commandArgs
     Server = require '../lib/server'
     server = new Server options
-    server.serve port, options
+    server.serve commandArgs[0], options
 
-  when 'build', 'builder'
+  when 'b', 'build', 'builder'
     Builder = require '../lib/builder'
-    [output] = commandArgs
-    (new Builder config).build output, options
+    builder = new Builder options
+    builder.build commandArgs[0], options
 
   when 'help'
     optimist.showHelp() # TODO

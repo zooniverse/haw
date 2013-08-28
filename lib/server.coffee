@@ -1,6 +1,7 @@
 Configurable = require './configurable'
 express = require 'express'
 require 'express-prettylogger'
+dotPrefix = require './dot-prefix'
 path = require 'path'
 fs = require 'fs'
 mime = require 'mime'
@@ -14,10 +15,10 @@ class Server extends Configurable
     server.use express.logger 'pretty'
 
     for local, mount of @mount then do (mount, local) =>
-      @emit 'log', "Will mount .#{path.sep}#{path.relative process.cwd(), local} at \"#{mount}\" "
+      @emit 'log', "Will mount #{dotPrefix local} at \"#{mount}\" "
 
     for requested, provided of @generate then do (requested, provided) =>
-      @emit 'log', "Will generate \"#{requested}\" from .#{path.sep}#{path.relative process.cwd(), provided}"
+      @emit 'log', "Will generate \"#{requested}\" from #{dotPrefix provided}"
 
     server.get '*', (req, res, next) =>
       @emit 'debug', "Request made for #{req.url}"

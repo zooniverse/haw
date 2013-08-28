@@ -2,15 +2,15 @@ coffeeToJs = require './coffee-to-js'
 stylToCss = require './styl-to-css'
 fs = require 'fs'
 
-module.exports =
+defaultConfig =
   root: '.'
 
-  port: 2217
+  port: 2217 # For the server
 
   output: 'build'
+  force: false # Delete existing build directory
 
   quiet: false
-
   debug: false
 
   mount:
@@ -44,3 +44,5 @@ module.exports =
 
     '{*,**/*}.png': (file, options, callback) ->
       fs.readFileSync file # TODO
+
+module.exports = defaultConfig
