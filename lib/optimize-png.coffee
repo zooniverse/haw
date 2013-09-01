@@ -1,10 +1,6 @@
-# TODO
+exec = require 'easy-exec'
 
 optimizePng = (file, options, callback) ->
-  fs.readFile file, (error, contents) ->
-    if error?
-      callback error
-    else
-      fs.writeFile file, contents, callback
+  exec "optipng -strip all -o7 -quiet #{file}", callback
 
 module.exports = optimizePng

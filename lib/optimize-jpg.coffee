@@ -5,9 +5,9 @@ fs = require 'fs'
 TEMP_FILE = path.resolve 'TEMP.jpg'
 
 optimizeJpg = (file, options, callback) ->
-  exec "jpegtran -copy none -progressive -outfile #{TEMP_FILE} #{file}", (code) ->
-    if code?
-      callback "Exit code was #{code}"
+  exec "jpegtran -copy none -progressive -outfile #{TEMP_FILE} #{file}", (error) ->
+    if error?
+      callback error
     else
       fs.unlink file, (error) ->
           if error?
