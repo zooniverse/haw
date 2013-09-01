@@ -12,7 +12,6 @@ coffeeToJs = (sourceFile, options, callback) ->
     ext: ['coffee', webmakeEco]
     sourceMap: true unless options.webmake?.sourceMap is false
     ignoreErrors: true unless options.webmake?.ignoreErrors is false
-    (error, result) ->
-      callback error, result
+    callback
 
 module.exports = coffeeToJs

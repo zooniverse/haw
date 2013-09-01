@@ -41,8 +41,15 @@ module.exports =
   controller:
     app:
       controllers:
-        '{{$0 | basename | dashed}}.coffee': '''
+        '{{$0 | dashed}}.coffee': '''
           class {{$0 | camelCased}}
+            className: {{$0 | camelCased}}
 
           module.exports = {{$0 | camelCase}}
         '''
+
+    css:
+      '{{$0 | dashed}}.styl': '''
+        .{{$0 | basename | dashed}}
+          color: inherit
+      '''

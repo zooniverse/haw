@@ -5,19 +5,17 @@
     "haw": "./bin/haw"
   },
   "dependencies": {
-    "clone": "~0.1.5",
+    "clean-css": "~1.0.12",
     "coffee-script": "~1.6.3",
-    "deep-extend": "~0.2.5",
     "eco": "~1.1.0-rc-3",
     "express": "~3.1.0",
     "express-prettylogger": "~0.1.2",
     "glob": "~3.2.6",
     "mime": "~1.2.11",
     "nib": "~0.9.1",
-    "node-version-assets": "~0.0.6",
     "optimist": "~0.3.5",
     "stylus": "~0.32.0",
-    "uglify-js": "~2.2.4",
+    "uglify-js": "~2.4.0",
     "webmake": "~0.3.20",
     "webmake-coffee": "~0.1.1",
     "wrench": "~1.4.4"

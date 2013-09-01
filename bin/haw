@@ -1,10 +1,12 @@
 #!/usr/bin/env coffee
 
 optimist = require 'optimist'
-defaults = require '../lib/defaults'
+defaultConfig = require '../lib/default-config'
 path = require 'path'
+require 'coffee-script'
+dotPrefix = require '../lib/dot-prefix'
 
-cwd = process.cwd()
+started = Date.now()
 
 optimist.usage '''
   Usage:
@@ -19,32 +21,60 @@ options = optimist.options({
   o: alias: 'output', description: 'Directory in which to build the site'
   f: alias: 'force', description: 'Overwrite any existing output directory'
   q: alias: 'quiet', description: 'Don\'t show any working info'
-  d: alias: 'debug', description: 'Show lots of working info'
-  v: alias: 'version', description: 'Print the version number'
+  v: alias: 'verbose', description: 'Show lots of working info'
   h: alias: 'help', description: 'Print some help'
+  version: description: 'Print the version number'
 }).argv
+
+configuration = {}
+configuration[property] = value for property, value of defaultConfig
+
+if options.config
+  configFile = path.resolve options.config
+
+  try
+    config = require path.resolve options.config
+  catch e
+    console.log "Couldn't find config file #{dotPrefix configFile}"
+    process.exit 1
+
+  if config?
+    if typeof config is 'function'
+      config.call configuration, configuration
+    else
+      configuration[property] = value for property, value of config
+
+configuration[property] = value for property, value of options
 
 [command, commandArgs...] = options._
 
 command = 'help' if options.help
-command = 'version' if options.version
+command = 'version' if options.version or (options.v and not command)
 
 switch command
   when 's', 'serve', 'server'
-    Server = require '../lib/server'
-    server = new Server options
-    server.serve commandArgs[0], options
+    serve = require '../lib/serve'
+    serve commandArgs[0], configuration
+
+    process.on 'SIGINT', ->
+      console.log ''
+      process.exit()
 
   when 'b', 'build', 'builder'
-    Builder = require '../lib/builder'
-    builder = new Builder options
-    builder.build commandArgs[0], options
+    build = require '../lib/build'
+    build commandArgs[0], configuration, (error) ->
+      if error?
+        console.log error
+        process.exit 1
+      else
+        console.log "Build took #{(Date.now() - started) / 1000} seconds"
 
-  when 'help'
-    optimist.showHelp() # TODO
+  when 'h', 'help'
+    optimist.showHelp()
 
-  when 'version'
+  when 'v', 'version'
     console.log (require path.join __dirname, '..', 'package').version
 
   else
     optimist.showHelp()
+    process.exit 1
