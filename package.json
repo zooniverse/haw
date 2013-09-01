@@ -1,12 +1,13 @@
 {
   "name": "haw",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "bin": {
     "haw": "./bin/haw"
   },
   "dependencies": {
     "clean-css": "~1.0.12",
     "coffee-script": "~1.6.3",
+    "easy-exec": "~0.0.5",
     "eco": "~1.1.0-rc-3",
     "express": "~3.1.0",
     "express-prettylogger": "~0.1.2",
