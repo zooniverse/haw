@@ -1,4 +1,4 @@
-module.exports =
+defaultsInits =
   default:
     app:
       'index.coffee': ''
@@ -13,7 +13,7 @@ module.exports =
         '.gitkeep': ''
 
     css:
-      'index.style': '''
+      'index.styl': '''
         body
           margin: 0
       '''
@@ -25,7 +25,7 @@ module.exports =
         <html>
           <head>
             <meta charset="utf-8" />
-            <title>{{$_}}</title>
+            <title>{{name}}</title>
             <link rel="stylesheet" href="./application.css" />
           </head>
 
@@ -41,15 +41,17 @@ module.exports =
   controller:
     app:
       controllers:
-        '{{$0 | dashed}}.coffee': '''
-          class {{$0 | camelCased}}
-            className: {{$0 | camelCased}}
+        '{{dashed name}}.coffee': '''
+          class {{classCase name}}
+            className: '{{dashed name}}'
 
-          module.exports = {{$0 | camelCase}}
+          module.exports = {{classCase name}}
         '''
 
     css:
-      '{{$0 | dashed}}.styl': '''
-        .{{$0 | basename | dashed}}
+      '{{dashed name}}.styl': '''
+        .{{dashed name}}
           color: inherit
       '''
+
+module.exports = defaultsInits

@@ -41,4 +41,6 @@ defaultConfig =
   timestamp:
     '/index.html': ['/main.js', '/main.css']
 
+  init: require './default-inits'
+
 module.exports = defaultConfig

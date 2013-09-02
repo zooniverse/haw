@@ -3,7 +3,6 @@
 optimist = require 'optimist'
 defaultConfig = require '../lib/default-config'
 path = require 'path'
-require 'coffee-script'
 dotPrefix = require '../lib/dot-prefix'
 
 started = Date.now()
@@ -30,19 +29,22 @@ configuration = {}
 configuration[property] = value for property, value of defaultConfig
 
 if options.config
-  configFile = path.resolve options.config
+  require 'coffee-script'
 
   try
-    config = require path.resolve options.config
-  catch e
-    console.log "Couldn't find config file #{dotPrefix configFile}"
-    process.exit 1
+    config = require options.config
 
-  if config?
-    if typeof config is 'function'
-      config.call configuration, configuration
-    else
-      configuration[property] = value for property, value of config
+  unless config?
+    try
+      config = require path.resolve options.config
+    catch e
+      console.log "Couldn't find config file #{dotPrefix path.resolve options.config}"
+      process.exit 1
+
+  if typeof config is 'function'
+    config.call configuration, configuration
+  else
+    configuration[property] = value for property, value of config
 
 configuration[property] = value for property, value of options
 
@@ -59,6 +61,15 @@ switch command
     process.on 'SIGINT', ->
       console.log ''
       process.exit()
+
+  when 'i', 'init'
+    init = require '../lib/init'
+    type = commandArgs.shift()
+    name = commandArgs.join ' '
+    init type, name, configuration, (error, created) ->
+      if error?
+        console.log error
+        process.exit 1
 
   when 'b', 'build', 'builder'
     build = require '../lib/build'

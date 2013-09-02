@@ -1,6 +1,6 @@
 {
   "name": "haw",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "bin": {
     "haw": "./bin/haw"
   },
@@ -19,6 +19,7 @@
     "uglify-js": "~2.4.0",
     "webmake": "~0.3.20",
     "webmake-coffee": "~0.1.1",
-    "wrench": "~1.4.4"
+    "wrench": "~1.4.4",
+    "handlebars": "~1.0.12"
   }
 }
