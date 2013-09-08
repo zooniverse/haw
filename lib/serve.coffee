@@ -38,8 +38,11 @@ serve = (port, options) ->
           localFile = possibleLocalFile
 
     if localFile?
-      requestExt = path.extname req.url
-      localExt = path.extname localFile
+      if fs.statSync(localFile).isDirectory()
+        localFile = path.resolve localFile, 'index.html'
+      else
+        requestExt = path.extname req.url
+        localExt = path.extname localFile
 
       unless requestExt is localExt
         compile = options.compile[localExt][requestExt]
