@@ -37,7 +37,10 @@ makeStructure = (dirs, structure, context) ->
       value = ((Handlebars.compile value) context)
       value += '\n' if value
       console.log 'Write', filename
-      fs.writeFileSync filename, value
+      if fs.existsSync filename
+        console.log "Already exists, skipped #{filename}"
+      else
+        fs.writeFileSync filename, value
     else
       dirs.push name
       dirpath = path.resolve dirs...
