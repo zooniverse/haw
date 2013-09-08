@@ -14,13 +14,11 @@ defaultConfig =
   # (Local directory): (Mount point)
   mount:
     './public': '/'
-    './test': '/test'
-    './build': '/build'
 
   # (Generated file path): (Source file)
   generate:
-    '/main.js': './app/index{.js,.coffee}'
-    '/main.css': './css/index{.css,.styl}'
+    '/main.js': './app/main{.js,.coffee}'
+    '/main.css': './css/main{.css,.styl}'
 
   # Compile based on extensions.
   compile:

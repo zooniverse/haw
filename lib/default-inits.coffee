@@ -1,7 +1,7 @@
 defaultsInits =
   default:
     app:
-      'index.coffee': ''
+      'main.coffee': ''
 
       models:
         '.gitkeep': ''
@@ -13,7 +13,7 @@ defaultsInits =
         '.gitkeep': ''
 
     css:
-      'index.styl': '''
+      'main.styl': '''
         body
           margin: 0
       '''
@@ -26,11 +26,11 @@ defaultsInits =
           <head>
             <meta charset="utf-8" />
             <title>{{name}}</title>
-            <link rel="stylesheet" href="./application.css" />
+            <link rel="stylesheet" href="./main.css" />
           </head>
 
           <body>
-            <script src="./application.js"></script>
+            <script src="./main.js"></script>
           </body>
         </html>
       '''

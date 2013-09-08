@@ -34,7 +34,8 @@ makeStructure = (dirs, structure, context) ->
     name = (Handlebars.compile name) context
     if typeof value is 'string'
       filename = path.resolve dirs..., name
-      value = ((Handlebars.compile value) context) + '\n'
+      value = ((Handlebars.compile value) context)
+      value += '\n' if value
       console.log 'Write', filename
       fs.writeFileSync filename, value
     else
