@@ -18,6 +18,11 @@ stylToCss = (sourceFile, options, callback) ->
 
       styl.set 'compress', false
 
-    callback error, styl?.render()
+      try
+        css = styl.render()
+      catch e
+        error = e
+
+    callback error, css
 
 module.exports = stylToCss
