@@ -52,6 +52,7 @@ serve = (port, options) ->
 
         compile localFile, options, (error, content) ->
           if error?
+            console.error "#{error}"
             res.send 500, error
           else
             res.contentType mime.lookup req.url
