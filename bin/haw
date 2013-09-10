@@ -28,17 +28,19 @@ options = optimist.options({
 configuration = {}
 configuration[property] = value for property, value of defaultConfig
 
-if options.config
-  require 'coffee-script'
+require 'coffee-script'
 
+configFile = options.config || configuration.config
+
+if configFile?
   try
-    config = require options.config
+    config = require configFile
 
   unless config?
     try
-      config = require path.resolve options.config
+      config = require path.resolve configFile
     catch e
-      console.log "Couldn't find config file #{dotPrefix path.resolve options.config}"
+      console.log "Couldn't find config file #{dotPrefix path.resolve configFile}"
       process.exit 1
 
   if typeof config is 'function'
