@@ -39,9 +39,6 @@ if configFile?
   unless config?
     try
       config = require path.resolve configFile
-    catch e
-      console.log "Couldn't find config file #{dotPrefix path.resolve configFile}"
-      process.exit 1
 
   if typeof config is 'function'
     config.call configuration, configuration
