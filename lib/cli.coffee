@@ -1,7 +1,7 @@
 optimist = require 'optimist'
-defaultConfig = require '../lib/default-config'
+defaultConfig = require './default-config'
 path = require 'path'
-dotPrefix = require '../lib/dot-prefix'
+dotPrefix = require './dot-prefix'
 
 started = Date.now()
 
