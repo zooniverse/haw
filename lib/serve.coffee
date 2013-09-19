@@ -2,6 +2,7 @@ express = require 'express'
 require 'express-prettylogger'
 dotPrefix = require './dot-prefix'
 path = require 'path'
+url = require 'url'
 fs = require 'fs'
 glob = require 'glob'
 mime = require 'mime'
@@ -22,17 +23,19 @@ serve = (port, options) ->
   server.get '*', (req, res, next) =>
     console.log "Request made for #{req.url}" if options.verbose
 
-    if req.url of options.generate
-      console.log "#{req.url} to be generated from \"#{options.generate[req.url]}\"" if options.verbose
-      source = (glob.sync path.resolve options.root, options.generate[req.url])[0]
+    reqUrl = (url.parse req.url).pathname
+
+    if reqUrl of options.generate
+      console.log "#{reqUrl} to be generated from \"#{options.generate[reqUrl]}\"" if options.verbose
+      source = (glob.sync path.resolve options.root, options.generate[reqUrl])[0]
       if source
         localFile = path.resolve options.root, source
       else
-        console.log "No matches for #{options.generate[req.url]}" if options.verbose
+        console.log "No matches for #{options.generate[reqUrl]}" if options.verbose
 
     unless localFile?
-      for local, mount of options.mount when req.url[...mount.length] is mount
-        possibleLocalFile = path.resolve options.root, local, ".#{path.sep}#{req.url}"
+      for local, mount of options.mount when reqUrl[...mount.length] is mount
+        possibleLocalFile = path.resolve options.root, local, ".#{path.sep}#{reqUrl}"
         if fs.existsSync possibleLocalFile
           console.log "Found #{possibleLocalFile}" if options.verbose
           localFile = possibleLocalFile
@@ -41,7 +44,7 @@ serve = (port, options) ->
       if fs.statSync(localFile).isDirectory()
         localFile = path.resolve localFile, 'index.html'
       else
-        requestExt = path.extname req.url
+        requestExt = path.extname reqUrl
         localExt = path.extname localFile
 
       unless requestExt is localExt
@@ -52,10 +55,10 @@ serve = (port, options) ->
 
         compile localFile, options, (error, content) ->
           if error?
-            console.error localFile, "#{error}"
+            console.error "#{error}"
             res.send 500, error
           else
-            res.contentType mime.lookup req.url
+            res.contentType mime.lookup reqUrl
             res.send content
 
       else
@@ -67,7 +70,7 @@ serve = (port, options) ->
             res.send content
 
     else
-      console.log "No suitable file found for #{req.url}" if options.verbose
+      console.log "No suitable file found for #{reqUrl}" if options.verbose
       res.send 404
 
   server.listen port
