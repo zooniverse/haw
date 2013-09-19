@@ -17,8 +17,8 @@ defaultConfig =
 
   # (Generated file path): (Source file)
   generate:
-    '/main.js': './app/main{.js,.coffee}'
-    '/main.css': './css/main{.css,.styl}'
+    '/main.js': './app/main.{js,coffee}'
+    '/main.css': './css/main.{css,styl}'
 
   # Compile based on extensions.
   compile:
