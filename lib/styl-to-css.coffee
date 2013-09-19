@@ -18,6 +18,8 @@ stylToCss = (sourceFile, options, callback) ->
 
       styl.set 'compress', false
 
+      styl.set 'sourcemaps', true
+
       try
         css = styl.render()
       catch e
