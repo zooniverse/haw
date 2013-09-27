@@ -5,6 +5,8 @@ defaultConfig =
 
   port: 2217
 
+  directoryIndex: 'index.{html,htm}'
+
   output: 'build'
   force: false
 

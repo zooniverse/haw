@@ -40,15 +40,22 @@ serve = (port, options) ->
           console.log "Found #{possibleLocalFile}" if options.verbose
           localFile = possibleLocalFile
 
+    if localFile? and (fs.statSync localFile).isDirectory()
+      console.log "Checking for index (#{options.directoryIndex}) in directory #{localFile}" if options.verbose
+      localFile = (glob.sync path.resolve localFile, options.directoryIndex)[0] || null
+      if options.verbose
+        if localFile?
+          console.log "Found #{localFile}"
+        else
+          console.log 'No index found'
+
     if localFile?
-      if fs.statSync(localFile).isDirectory()
-        localFile = path.resolve localFile, 'index.html'
-      else
-        requestExt = path.extname reqUrl
-        localExt = path.extname localFile
+      requestExt = path.extname reqUrl
+      localExt = path.extname localFile
 
       unless requestExt is localExt
-        compile = options.compile[localExt][requestExt]
+        console.log "Request (#{requestExt}) and local (#{localExt}) extensions don't match"
+        compile = options.compile[localExt]?[requestExt]
 
       if compile?
         console.log "Compiling #{localFile} (#{localExt}->#{requestExt})}" if options.verbose
