@@ -54,7 +54,7 @@ serve = (port, options) ->
       localExt = path.extname localFile
 
       unless requestExt is localExt
-        console.log "Request (#{requestExt}) and local (#{localExt}) extensions don't match"
+        console.log "Request (#{requestExt}) and local (#{localExt}) extensions don't match" if options.verbose
         compile = options.compile[localExt]?[requestExt]
 
       if compile?
