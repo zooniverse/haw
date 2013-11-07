@@ -1,6 +1,6 @@
 {
   "name": "haw",
-  "version": "0.2.12",
+  "version": "0.2.13",
   "bin": {
     "haw": "./bin/haw"
   },
@@ -21,5 +21,6 @@
     "webmake-coffee": "~0.1.1",
     "wrench": "~1.4.4",
     "handlebars": "~1.0.12"
-  }
+  },
+  "license": "Apache 2.0"
 }
