@@ -7,8 +7,10 @@ started = Date.now()
 
 optimist.usage '''
   Usage:
-    haw build --config ./package.json --output ./build
+    haw init
+    haw init controller SomeController
     haw serve --port 1234
+    haw build --config ./package.json --output ./build
 '''
 
 options = optimist.options({
