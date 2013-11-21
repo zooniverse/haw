@@ -39,7 +39,7 @@ defaultConfig =
   # (File with references): (Files to timestamp)
   # Paths are rooted at the build directory.
   timestamp:
-    '/index.html': ['/main.js', '/main.css']
+    '/index.html': ['main.js', 'main.css']
 
   init: require './default-inits'
 
