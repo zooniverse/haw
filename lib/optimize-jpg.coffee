@@ -2,10 +2,11 @@ path = require 'path'
 exec = require 'easy-exec'
 fs = require 'fs'
 
-TEMP_FILE = path.resolve 'TEMP.jpg'
 
 optimizeJpg = (file, options, callback) ->
-  exec "jpegtran -copy none -progressive -outfile #{TEMP_FILE} #{file}", (error) ->
+  tempFile = path.resolve ".TEMP.#{Math.random().toString().split('.')[1]}.jpg"
+
+  exec "jpegtran -copy none -progressive -outfile #{tempFile} #{file}", (error) ->
     if error?
       callback error
     else
@@ -13,7 +14,7 @@ optimizeJpg = (file, options, callback) ->
           if error?
             callback error
           else
-            fs.rename TEMP_FILE, file, (error) ->
+            fs.rename tempFile, file, (error) ->
               if error?
                 callback error
               else
