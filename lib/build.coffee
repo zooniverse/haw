@@ -190,8 +190,8 @@ applyTimestamps = (build, referencers, options, callback) ->
               ext = path.extname file
               newName = "#{file[...-ext.length]}-#{now}#{ext}"
 
-              content = content.replace ///(src|href)="([^"]*)#{ file }"///i, (totalMatch, ref, path) ->
-                "#{ ref }=\"#{ path }#{ newName }\""
+              content = content.replace ///(src|href)="([^"]*)#{file}"///i, (totalMatch, ref, path) ->
+                "#{ref}=\"#{path}#{newName}\""
 
               oldPath = path.resolve build, ".#{path.sep}#{file}"
               newPath = "#{oldPath[...-ext.length]}-#{now}#{ext}"
