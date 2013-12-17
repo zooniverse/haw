@@ -57,6 +57,15 @@ switch command
     serve = require '../lib/serve'
     serve commandArgs[0], configuration
 
+    # exec = require 'easy-exec'
+    # console.log 'Hit "o" to open your browser.'
+    # process.stdin.setRawMode true
+    # process.stdin.resume()
+    # process.stdin.on 'data', (data) ->
+    #   switch "#{data}"
+    #     when 'o' then exec "open http://localhost:#{configuration.port}"
+    #     when '\u0003' then process.exit()
+
     process.on 'SIGINT', ->
       console.log ''
       process.exit()
