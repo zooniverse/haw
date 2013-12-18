@@ -2,6 +2,8 @@ path = require 'path'
 exec = require 'easy-exec'
 fs = require 'fs'
 
+exec 'which jpegtran', (error) ->
+  console.error 'Missing jpegtran! Try `brew install jpeg`.' if error
 
 optimizeJpg = (file, options, callback) ->
   tempFile = path.resolve ".TEMP.#{Math.random().toString().split('.')[1]}.jpg"
