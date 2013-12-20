@@ -1,6 +1,7 @@
+which = require 'which'
 exec = require 'easy-exec'
 
-exec 'which optipng', (error) ->
+which 'optipng', (error) ->
   console.error 'Missing optipng! Try `brew install optipng`.' if error
 
 optimizePng = (file, options, callback) ->

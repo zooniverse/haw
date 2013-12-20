@@ -1,8 +1,9 @@
+which = require 'which'
 path = require 'path'
 exec = require 'easy-exec'
 fs = require 'fs'
 
-exec 'which jpegtran', (error) ->
+which 'jpegtran', (error) ->
   console.error 'Missing jpegtran! Try `brew install jpeg`.' if error
 
 optimizeJpg = (file, options, callback) ->
