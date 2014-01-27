@@ -5,6 +5,7 @@
     "haw": "./bin/haw"
   },
   "dependencies": {
+    "chalk": "~0.4.0",
     "clean-css": "~1.0.12",
     "coffee-script": "~1.6.3",
     "easy-exec": "~0.0.5",

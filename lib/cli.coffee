@@ -1,6 +1,7 @@
 optimist = require 'optimist'
 defaultConfig = require './default-config'
 path = require 'path'
+chalk = require 'chalk'
 dotPrefix = require './dot-prefix'
 
 started = Date.now()
@@ -54,8 +55,7 @@ command = 'version' if options.version or (options.v and not command)
 
 switch command
   when 's', 'serve', 'server'
-    serve = require '../lib/serve'
-    serve commandArgs[0], configuration
+    Server = require './server'
 
     # exec = require 'easy-exec'
     # console.log 'Hit "o" to open your browser.'
@@ -69,6 +69,19 @@ switch command
     process.on 'SIGINT', ->
       console.log ''
       process.exit()
+    port = commandArgs[0] ? configuration.port
+
+    server = new Server configuration
+
+    unless configuration.quiet
+      server.on 'info', console.log.bind console
+      server.on 'warn', console.log.bind console, chalk.red 'WARN'
+      server.on 'error', (messages...) -> console.log chalk.red "# #{messages.join ' '}"
+
+    if configuration.verbose
+      server.on 'log', (messages...) -> console.log chalk.gray "# #{messages.join ' '}"
+
+    server.serve port
 
   when 'i', 'init'
     init = require '../lib/init'
