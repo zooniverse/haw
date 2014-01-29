@@ -50,29 +50,28 @@ configuration[property] = value for property, value of options
 command = 'help' if options.help
 command = 'version' if options.version or (options.v and not command)
 
+showOutput = (thing) ->
+  unless configuration.quiet
+    thing.on 'info', console.log.bind console
+    thing.on 'warn', console.log.bind console, chalk.red 'WARN'
+    thing.on 'err', (messages...) -> console.log chalk.red "# #{messages.join ' '}"
+
+  if configuration.verbose
+    thing.on 'log', (messages...) -> console.log chalk.gray "# #{messages.join ' '}"
+
 switch command
   when 's', 'serve', 'server'
     Server = require './server'
     exec = require 'easy-exec'
-
     port = commandArgs[0] ? configuration.port
-
     server = new Server configuration
-
-    unless configuration.quiet
-      server.on 'info', console.log.bind console
-      server.on 'warn', console.log.bind console, chalk.red 'WARN'
-      server.on 'error', (messages...) -> console.log chalk.red "# #{messages.join ' '}"
-
-    if configuration.verbose
-      server.on 'log', (messages...) -> console.log chalk.gray "# #{messages.join ' '}"
+    showOutput server
 
     console.log 'Hit "o" to open your browser.'
-
     process.stdin.setRawMode true
     process.stdin.resume()
     process.stdin.on 'data', (data) ->
-      switch "#{data}"
+      switch data.toString()
         when 'o'
           console.log 'Opening browser'
           exec "open http://localhost:#{configuration.port}"
@@ -94,15 +93,7 @@ switch command
   when 'b', 'build', 'builder'
     Builder = require '../lib/builder'
     builder = new Builder configuration
-
-    unless configuration.quiet
-      builder.on 'info', console.log.bind console
-      builder.on 'warn', console.log.bind console, chalk.red 'WARN'
-      builder.on 'err', (messages...) -> console.log chalk.red "# #{messages.join ' '}"
-
-    if configuration.verbose
-      builder.on 'log', (messages...) -> console.log chalk.gray "# #{messages.join ' '}"
-
+    showOutput builder
     builder.build()
 
   when 'h', 'help'

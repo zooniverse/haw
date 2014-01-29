@@ -32,9 +32,9 @@ class Builder extends EventEmitter
         if fs.statSync(@output).isDirectory()
           @removeOldBuildDirectory @output
         else
-          @emit 'err', "Cannot remove #{@output}; not a directory"
+          @emit 'error', "Cannot remove #{@output}; not a directory"
       else
-        @emit 'err', "Build directory #{@output} already exists; try --force"
+        @emit 'error', "Build directory #{@output} already exists; try --force"
 
     unless fs.existsSync @output
       @makeBuildDirectory()
@@ -81,7 +81,7 @@ class Builder extends EventEmitter
         process.nextTick =>
           @generateFile generatedFile, (error, content) =>
             if error?
-              @emit 'err', 'File generation error:', error
+              @emit 'error', 'File generation error:', error
               callback? error
             else
               fs.writeFile outputFile, content, (error) =>
@@ -111,7 +111,7 @@ class Builder extends EventEmitter
         optimizer.call @, filename, (error) =>
           todo -= 1
           if error?
-            @emit 'err', "Error optimizing #{filename}:", error
+            @emit 'error', "Error optimizing #{filename}:", error
             callback? error
           else
             @emit 'log', "Optimized #{filename} successfully"
