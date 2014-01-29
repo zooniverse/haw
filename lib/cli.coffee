@@ -2,7 +2,6 @@ optimist = require 'optimist'
 defaultConfig = require './default-config'
 path = require 'path'
 chalk = require 'chalk'
-dotPrefix = require './dot-prefix'
 
 optimist.usage '''
   Usage:
