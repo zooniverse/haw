@@ -18,79 +18,82 @@ class Server extends EventEmitter
     super
     @[property] = value for property, value of config
 
-  serve: (port = @port) ->
     @app = express()
 
     @app.all '*', (req, res, next) =>
-      @emit 'info', "Got request for #{req.url}"
+      @emit 'info', "Got a request for #{req.url}"
       next()
 
     for localGlob, mount of @mount
       localMatches = glob.sync path.resolve @root, localGlob
       for local in localMatches
-        @emit 'info', "Mounting #{path.relative @root, local} at #{mount}"
         @app.use mount, express.static local
 
-    for virtualFile, generator of @generate then do (virtualFile, generator) =>
-      @emit 'info', "Will generate #{virtualFile} from #{generator}"
-      @app.get virtualFile, (req, res, next) =>
-        reqExt = path.extname(req.path).slice 1
+    for generatedFile, generator of @generate
+      @app.get generatedFile, @handleGeneratedFileRequest
 
-        respond = (error, content) =>
-          if error?
-            @emit 'error', "Responding with an error #{error}"
-            res.send 500, error
-          else
-            mimeType = mime.lookup req.path
-            @emit 'log', "Content type of #{req.path} is #{mimeType}"
-            res.contentType mimeType
-
-            transformer = @compile[reqExt]?[reqExt]
-            if transformer?
-              @emit 'info', "Transforming final #{reqExt} response"
-              transformer.call @, content, (error, content) =>
-                if error?
-                  @emit 'error', "Transformation error #{error}"
-                  respond error
-                else
-                  @emit 'log', 'Transformation successful'
-                  res.send content
-            else
-              res.send content
-
-        glob path.resolve(@root, generator), (error, matches) =>
-          if error?
-            @emit 'error', "Glob error: #{generator}"
-            respond error
-          else if matches.length is 0
-            @emit 'error', "Couldn't find a match for #{virtualFile} at #{generator}"
-            next()
-          else
-            match = matches[0]
-            if matches.length is 1
-              @emit 'info', "Matched #{match}"
-            else
-              @emit 'warn', "Multiple matches found to generate #{generator}; using #{match}"
-
-            srcExt = path.extname(match).slice 1
-            compiler = @compile[srcExt]?[reqExt]
-
-            if copmiler?
-              @emit 'info', "Compiling #{srcExt}->#{reqExt}"
-            else
-              @emit 'log', "No compiler found for #{srcExt}->#{reqExt}"
-              compiler ?= ASYNC_IDENTITY
-
-            compiler.call @, match, (error, content) =>
-              if error?
-                @emit 'error', "Compile error: #{error}"
-                respond error
-              else
-                respond null, content
-
+  serve: (port = @port) ->
     @app.listen port
+
     @emit 'info', "Server listening on port #{port}"
+
+    for localGlob, mount of @mount
+      @emit 'info', "Mounting #{localGlob} at #{mount}"
+
+    for generatedFile, generator of @generate
+      @emit 'info', "Will generate #{generatedFile} from #{generator}"
+
     @app
+
+  handleGeneratedFileRequest: (req, res, next) =>
+    @generateFile req.path, (error, content) =>
+      if error?
+        @emit 'error', "Error generating #{req.path}", error
+        res.send 500, error
+      else if content?
+        @emit 'info', "Generated #{req.path} successfully"
+        mimeType = mime.lookup req.path
+        res.contentType mimeType
+        res.send content
+      else
+        @emit 'warn', "No content generated for #{req.path}"
+        next()
+
+  generateFile: (generatedFile, callback) ->
+    generator = @generate[generatedFile]
+    glob path.resolve(@root, generator), (error, matches) =>
+      if error?
+        @emit 'error', "Error with glob #{generator}", error
+        callback? error
+
+      else if matches.length is 0
+        @emit 'error', "No match found for #{generator}"
+        callback?()
+
+      else
+        if matches.length > 1
+          @emit 'warn', "Found multiple matches for #{generator}"
+
+        source = matches[0]
+        @emit 'info', "Generating #{generatedFile} from #{source}"
+
+        srcExt = path.extname(source).slice 1
+        reqExt = path.extname(generatedFile).slice 1
+        compiler = @compile[srcExt]?[reqExt]
+
+        if compiler?
+          @emit 'log', "Found compiler for #{generatedFile} (#{srcExt}->#{reqExt})"
+        else
+          @emit 'log', "No compiler found for #{generatedFile} (#{srcExt}->#{reqExt})"
+          compiler ?= ASYNC_IDENTITY
+
+        compiler.call @, source, (error, content) =>
+          if error?
+            @emit 'error', "Compile error in #{source}:", error
+            callback error
+          else
+            @emit 'log', "Compiled #{source} successfully"
+            callback null, content
 
   close: ->
     @app.close()
