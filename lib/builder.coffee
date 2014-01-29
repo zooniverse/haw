@@ -1,4 +1,5 @@
 {EventEmitter} = require 'events'
+Server = require './server'
 defaultConfig = require './default-config'
 async = require 'async'
 wrench = require 'wrench'
@@ -69,60 +70,35 @@ class Builder extends EventEmitter
 
   generateFiles: (callback) ->
     todo = 0
-    for generatedFile, srcFilesGlob of @generate
+    for generatedFile, srcFilesGlob of @generate then do (generatedFile) =>
       @emit 'log', "Generating #{generatedFile} from #{srcFilesGlob}"
-      generatedFile = path.resolve @output, ".#{path.sep}#{generatedFile}"
+      outputFile = path.resolve @output, ".#{path.sep}#{generatedFile}"
 
-      if fs.existsSync generatedFile
-        @emit 'warn', "#{generatedFile} already exists; skipping"
+      if fs.existsSync outputFile
+        @emit 'warn', "#{outputFile} already exists; skipping"
       else
-        srcFiles = glob.sync path.resolve @root, srcFilesGlob
-        if srcFiles.length is 0
-          @emit 'log', "No matches for #{srcFilesGlob}"
-        else
-          srcFile = srcFiles[0]
-          if srcFiles.length is 1
-            @emit 'log', "Matched source file #{srcFile}"
-          else
-            @emit 'warn', "Found multiple sources for #{generatedFile}; using #{srcFile}"
-
-          todo += 1
-          @generateFile srcFile, generatedFile, (error) =>
-            todo -= 1
+        todo += 1
+        process.nextTick =>
+          @generateFile generatedFile, (error, content) =>
             if error?
               @emit 'err', 'File generation error:', error
               callback? error
             else
-              @emit 'log', "Generated #{generatedFile} successfully"
-              if todo is 0
-                @emit 'log', 'Finished generating files'
-                callback?()
-              else
-                @emit 'log', "Waiting for #{todo} files to generate"
+              fs.writeFile outputFile, content, (error) =>
+                todo -= 1
 
-  generateFile: (srcFile, generatedFile, callback) ->
-    @emit 'info', "Will generate #{generatedFile} from #{srcFile}"
+                if error?
+                  @emit 'error', "Error writing #{generatedFile}"
+                else
+                  @emit 'log', "Generated #{generatedFile} successfully"
 
-    srcFileExt = path.extname(srcFile).slice 1
-    genFileExt = path.extname(generatedFile).slice 1
+                if todo is 0
+                  @emit 'log', 'Finished generating files'
+                  callback?()
+                else
+                  @emit 'log', "Waiting for #{todo} files to generate"
 
-    compiler = @compile[srcFileExt]?[genFileExt]
-    if compiler?
-      @emit 'info', "Will compile #{generatedFile} (#{srcFileExt}->#{genFileExt})"
-    else
-      @emit 'log', "No compiler found for #{generatedFile} (#{srcFileExt}->#{genFileExt})"
-      compiler = ASYNC_IDENTITY
-
-    process.nextTick =>
-      compiler.call @, srcFile, (error, compiled) =>
-        if error?
-          @emit 'err', "Error compiling #{srcFile}:", error
-          callback?.call @, error
-        else
-          @emit 'log', "Compiled #{srcFile} successfully"
-          fs.writeFileSync generatedFile, compiled
-          @emit 'log', "Wrote #{generatedFile} successfully"
-          callback?.call @
+  generateFile: Server::generateFile
 
   optimizeFiles: (callback) ->
     todo = 0
