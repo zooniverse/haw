@@ -14,7 +14,6 @@ class Builder extends EventEmitter
   mount: defaultConfig.mount
   generate: defaultConfig.generate
   compile: defaultConfig.compile
-  postProcess: defaultConfig.compile
   optimize: defaultConfig.optimize
   timestamp: defaultConfig.timestamp
   stampFilename: defaultConfig.stampFilename
@@ -25,6 +24,7 @@ class Builder extends EventEmitter
 
   build: ->
     started = Date.now()
+
     if fs.existsSync @output
       @emit 'log', "Build directory #{@output} already exists"
       if @force
@@ -107,10 +107,6 @@ class Builder extends EventEmitter
     genFileExt = path.extname(generatedFile).slice 1
 
     compiler = @compile[srcFileExt]?[genFileExt]
-    processor = @postProcess?[genFileExt]
-
-    source = "#{fs.readFileSync srcFile}"
-
     if compiler?
       @emit 'info', "Will compile #{generatedFile} (#{srcFileExt}->#{genFileExt})"
     else
@@ -118,29 +114,15 @@ class Builder extends EventEmitter
       compiler = ASYNC_IDENTITY
 
     process.nextTick =>
-      compiler.call @, source, (error, compiled) =>
+      compiler.call @, srcFile, (error, compiled) =>
         if error?
           @emit 'err', "Error compiling #{srcFile}:", error
           callback?.call @, error
         else
           @emit 'log', "Compiled #{srcFile} successfully"
-
-          if processor?
-            @emit 'info', "Will post-process #{generatedFile} (#{genFileExt})"
-          else
-            @emit 'log', "No post-processor found for #{generatedFile} (#{genFileExt})"
-            processor = ASYNC_IDENTITY
-
-          processor.call @, compiled, (error, processed) =>
-            if error?
-              @emit 'err', "Error post-processing #{generatedFile}:", error
-              callback?.call @, error
-            else
-              @emit 'log', "Post-processed #{generatedFile} successfully"
-
-              fs.writeFileSync generatedFile, processed
-              @emit 'log', "Wrote #{generatedFile} successfully"
-              callback?.call @
+          fs.writeFileSync generatedFile, compiled
+          @emit 'log', "Wrote #{generatedFile} successfully"
+          callback?.call @
 
   optimizeFiles: (callback) ->
     todo = 0
@@ -197,40 +179,3 @@ class Builder extends EventEmitter
     @emit 'log', "Updated references in #{filename} successfully"
 
 module.exports = Builder
-
-# builder = new Builder
-#   root: 'demo'
-#   force: true
-
-#   compile:
-#     coffee:
-#       js: (content, callback) ->
-#         callback? null, "// COMPILED\n#{content}"
-
-#   postProcess:
-#     js: (content, callback) ->
-#       callback? null, "// RESOLVED\n#{content}"
-
-#   optimize:
-#     '/main.js': (filename, callback) ->
-#       # Optimize in place
-#       callback()
-
-#   timestamp:
-#     '/main.{css,js}': '/index.html'
-
-#   stampFilename: (filename, callback) ->
-#     # TODO: Async
-#     crypto = require 'crypto'
-#     content = fs.readFileSync filename
-#     hash = crypto.createHash('md5').update(content).digest 'hex'
-#     [nameSegments..., ext] = filename.split '.'
-#     "#{nameSegments.join '.'}.#{hash[...6]}.#{ext}"
-
-# chalk = require 'chalk'
-# builder.on 'info', console.log.bind console
-# builder.on 'warn', console.log.bind console, chalk.red 'WARN'
-# builder.on 'error', (messages...) -> console.log chalk.red "# #{messages.join ' '}"
-# builder.on 'log', (messages...) -> console.log chalk.gray "# #{messages.join ' '}"
-
-# builder.build()

@@ -5,6 +5,7 @@ glob = require 'glob'
 path = require 'path'
 fs = require 'fs'
 mime = require 'mime'
+ASYNC_IDENTITY = require './async-identity'
 
 class Server extends EventEmitter
   port: defaultConfig.port
@@ -71,24 +72,21 @@ class Server extends EventEmitter
             else
               @emit 'warn', "Multiple matches found to generate #{generator}; using #{match}"
 
-            fs.readFile match, (error, content) =>
-              if error?
-                @emit 'error', "Error reading #{match}"
-              else
-                srcExt = path.extname(match).slice 1
-                unless srcExt is reqExt
-                  compiler = @compile[srcExt]?[reqExt]
+            srcExt = path.extname(match).slice 1
+            compiler = @compile[srcExt]?[reqExt]
 
-                if compiler?
-                  @emit 'info', "Compiling #{srcExt}->#{reqExt}"
-                  compiler.call @, content, (error, content) =>
-                    if error?
-                      @emit 'error', "Compile error: #{error}"
-                      respond error
-                    else
-                      respond null, content
-                else
-                  respond null, content
+            if copmiler?
+              @emit 'info', "Compiling #{srcExt}->#{reqExt}"
+            else
+              @emit 'log', "No compiler found for #{srcExt}->#{reqExt}"
+              compiler ?= ASYNC_IDENTITY
+
+            compiler.call @, match, (error, content) =>
+              if error?
+                @emit 'error', "Compile error: #{error}"
+                respond error
+              else
+                respond null, content
 
     @app.listen port
     @emit 'info', "Server listening on port #{port}"

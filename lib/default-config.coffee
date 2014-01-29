@@ -5,8 +5,6 @@ defaultConfig =
 
   port: 2217
 
-  directoryIndex: 'index.{html,htm}'
-
   output: 'build'
   force: false
 
@@ -24,19 +22,41 @@ defaultConfig =
 
   # Compile generated files (by source -> request extension).
   compile:
-    coffee: js: (source, callback) ->
-      CoffeeScript = require 'coffee-script'
-      try
-        callback null, CoffeeScript.compile source
-      catch e
-        callback e
+    coffee: js: (sourceFile, callback) ->
+      webmake = require 'webmake'
+      webmakeEco = require './webmake-eco'
 
-    styl: css: require './styl-to-css'
+      webmake sourceFile,
+        ext: ['coffee', webmakeEco]
+        sourceMap: true unless @webmakeOptions?.sourceMap is false
+        ignoreErrors: true unless @webmakeOptions?.ignoreErrors is false
+        callback
 
-  # Post-process generated files (by request extension).
-  postProcess:
-    js: (content, callback) ->
-      callback? null, "// Requires resolved\n#{content}"
+    styl: css: (sourceFile, callback) ->
+      fs = require 'fs'
+      stylus = require 'stylus'
+      path = require 'path'
+      nib = require 'nib'
+
+      fs.readFile sourceFile, (error, source) =>
+        if error?
+          callback error
+        else
+          styl = stylus source.toString()
+          styl.include path.dirname sourceFile
+
+          unless @stylusOptions?.nib is false
+            styl.include nib.path
+            styl.import 'nib'
+
+          unless @stylusOptions?.includeCss is false
+            styl.set 'include css', true
+
+          try
+            rendered = styl.render()
+            callback null, rendered
+          catch e
+            callback e
 
   # Optimize files after a build.
   # Paths are rooted at the build directory.
@@ -49,7 +69,7 @@ defaultConfig =
   # Modify file names, update references to them
   # (File with references): (Files to timestamp)
   timestamp:
-    '/main.{css,js}': 'index.html'
+    '/main.{css,js}': '/index.html'
 
   stampFilename: (filename, callback) ->
     # TODO: Async
