@@ -4,8 +4,6 @@ path = require 'path'
 chalk = require 'chalk'
 dotPrefix = require './dot-prefix'
 
-started = Date.now()
-
 optimist.usage '''
   Usage:
     haw init
@@ -95,13 +93,18 @@ switch command
         process.exit 1
 
   when 'b', 'build', 'builder'
-    build = require '../lib/build'
-    build commandArgs[0], configuration, (error) ->
-      if error?
-        console.log error
-        process.exit 1
-      else
-        console.log "Build took #{(Date.now() - started) / 1000} seconds"
+    Builder = require '../lib/builder'
+    builder = new Builder configuration
+
+    unless configuration.quiet
+      builder.on 'info', console.log.bind console
+      builder.on 'warn', console.log.bind console, chalk.red 'WARN'
+      builder.on 'err', (messages...) -> console.log chalk.red "# #{messages.join ' '}"
+
+    if configuration.verbose
+      builder.on 'log', (messages...) -> console.log chalk.gray "# #{messages.join ' '}"
+
+    builder.build()
 
   when 'h', 'help'
     optimist.showHelp()

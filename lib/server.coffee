@@ -14,6 +14,7 @@ class Server extends EventEmitter
   compile: defaultConfig.compile
 
   constructor: (config) ->
+    super
     @[property] = value for property, value of config
 
   serve: (port = @port) ->
@@ -36,7 +37,7 @@ class Server extends EventEmitter
 
         respond = (error, content) =>
           if error?
-            @emit 'error', 'Responding with an error'
+            @emit 'error', "Responding with an error #{error}"
             res.send 500, error
           else
             mimeType = mime.lookup req.path
@@ -48,7 +49,7 @@ class Server extends EventEmitter
               @emit 'info', "Transforming final #{reqExt} response"
               transformer.call @, content, (error, content) =>
                 if error?
-                  @emit 'error', 'Transformation error'
+                  @emit 'error', "Transformation error #{error}"
                   respond error
                 else
                   @emit 'log', 'Transformation successful'
@@ -72,15 +73,20 @@ class Server extends EventEmitter
 
             fs.readFile match, (error, content) =>
               if error?
-                @emit 'error', "File read error: #{match}"
+                @emit 'error', "Error reading #{match}"
               else
                 srcExt = path.extname(match).slice 1
-                if srcExt isnt reqExt
+                unless srcExt is reqExt
                   compiler = @compile[srcExt]?[reqExt]
 
                 if compiler?
                   @emit 'info', "Compiling #{srcExt}->#{reqExt}"
-                  compiler.call @, content, respond
+                  compiler.call @, content, (error, content) =>
+                    if error?
+                      @emit 'error', "Compile error: #{error}"
+                      respond error
+                    else
+                      respond null, content
                 else
                   respond null, content
 

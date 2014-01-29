@@ -15,19 +15,30 @@ defaultConfig =
 
   # (Local directory): (Mount point)
   mount:
-    './public': '/'
+    './{public,static}': '/'
 
   # (Generated file path): (Source file)
   generate:
     '/main.js': './app/main.{js,coffee}'
     '/main.css': './css/main.{css,styl}'
 
-  # Compile based on extensions.
+  # Compile generated files (by source -> request extension).
   compile:
-    '.coffee': '.js': require './coffee-to-js'
-    '.styl': '.css': require './styl-to-css'
+    coffee: js: (source, callback) ->
+      CoffeeScript = require 'coffee-script'
+      try
+        callback null, CoffeeScript.compile source
+      catch e
+        callback e
 
-  # Optimize files after a build
+    styl: css: require './styl-to-css'
+
+  # Post-process generated files (by request extension).
+  postProcess:
+    js: (content, callback) ->
+      callback? null, "// Requires resolved\n#{content}"
+
+  # Optimize files after a build.
   # Paths are rooted at the build directory.
   optimize:
     '/main.js': require './optimize-js'
@@ -38,7 +49,16 @@ defaultConfig =
   # Modify file names, update references to them
   # (File with references): (Files to timestamp)
   timestamp:
-    'index.html': ['main.js', 'main.css']
+    '/main.{css,js}': 'index.html'
+
+  stampFilename: (filename, callback) ->
+    # TODO: Async
+    fs = require 'fs'
+    crypto = require 'crypto'
+    content = fs.readFileSync filename
+    hash = crypto.createHash('md5').update(content).digest 'hex'
+    [nameSegments..., ext] = filename.split '.'
+    "#{nameSegments.join '.'}.#{hash[...6]}.#{ext}"
 
   init: require './default-inits'
 

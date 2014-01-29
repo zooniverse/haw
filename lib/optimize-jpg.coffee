@@ -6,7 +6,7 @@ fs = require 'fs'
 which 'jpegtran', (error) ->
   console.error 'Missing jpegtran! Try `brew install jpeg`.' if error
 
-optimizeJpg = (file, options, callback) ->
+optimizeJpg = (file, callback) ->
   tempFile = path.resolve ".TEMP.#{Math.random().toString().split('.')[1]}.jpg"
 
   exec "jpegtran -copy none -progressive -outfile #{tempFile} #{file}", (error) ->

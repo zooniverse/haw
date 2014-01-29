@@ -1,7 +1,7 @@
 fs = require 'fs'
 cleanCSS = require 'clean-css'
 
-optimizeCss = (file, options, callback) ->
+optimizeCss = (file, callback) ->
   fs.readFile file, (error, content) ->
     if error?
       callback error

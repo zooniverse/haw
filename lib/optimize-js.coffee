@@ -1,7 +1,7 @@
 UglifyJS = require 'uglify-js'
 fs = require 'fs'
 
-optimizeJs = (file, options, callback) ->
+optimizeJs = (file, callback) ->
   {code} = UglifyJS.minify file
   fs.writeFile file, code, callback
 
