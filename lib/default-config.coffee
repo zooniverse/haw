@@ -22,7 +22,7 @@ defaultConfig =
 
   # Compile generated files (by source -> request extension).
   compile:
-    coffee: js: (sourceFile, callback) ->
+    js: js: (sourceFile, callback) ->
       webmake = require 'webmake'
       webmakeEco = require './webmake-eco'
 
@@ -31,6 +31,8 @@ defaultConfig =
         sourceMap: true unless @webmakeOptions?.sourceMap is false
         ignoreErrors: true unless @webmakeOptions?.ignoreErrors is false
         callback
+
+    coffee: js: @compile.js.js.apply @, arguments
 
     styl: css: (sourceFile, callback) ->
       fs = require 'fs'
