@@ -72,13 +72,13 @@ defaultConfig =
 
     '/main.css': (filename, callback) ->
       fs = require 'fs'
-      cleanCSS = require 'clean-css'
+      CleanCSS = require 'clean-css'
 
       fs.readFile filename, (error, content) ->
         if error?
           callback error
         else
-          min = cleanCSS.process "#{content}", keepBreaks: true
+          min = new CleanCSS(keepBreaks: true).minify content
           fs.writeFile filename, min, callback
 
     '{*,**/*}.jpg': (filename, callback) ->
