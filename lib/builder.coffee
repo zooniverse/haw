@@ -1,7 +1,6 @@
 {EventEmitter} = require 'events'
 Server = require './server'
 defaultConfig = require './default-config'
-async = require 'async'
 wrench = require 'wrench'
 glob = require 'glob'
 path = require 'path'
