@@ -100,39 +100,43 @@ class Builder extends EventEmitter
   generateFile: Server::generateFile
 
   optimizeFiles: (callback) ->
-    todo = 0
-    for pattern, optimizer of @optimize
-      @emit 'log', "Will optimize #{pattern}"
-      matches = glob.sync path.resolve @output, ".#{path.sep}#{pattern}"
-      for filename in matches
-        todo += 1
-        @emit 'info', "Optimizing #{filename}"
-        optimizer.call @, filename, (error) =>
-          todo -= 1
-          if error?
-            @emit 'error', "Error optimizing #{filename}:", error
-            callback? error
-          else
-            @emit 'log', "Optimized #{filename} successfully"
-            if todo is 0
-              @emit 'log', 'Finished optimizing files'
-              callback?()
+    if @optimize
+      todo = 0
+      for pattern, optimizer of @optimize
+        @emit 'log', "Will optimize #{pattern}"
+        matches = glob.sync path.resolve @output, ".#{path.sep}#{pattern}"
+        for filename in matches
+          todo += 1
+          @emit 'info', "Optimizing #{filename}"
+          optimizer.call @, filename, (error) =>
+            todo -= 1
+            if error?
+              @emit 'error', "Error optimizing #{filename}:", error
+              callback? error
             else
-              @emit 'log', "Waiting for #{todo} files to optimize"
+              @emit 'log', "Optimized #{filename} successfully"
+              if todo is 0
+                @emit 'log', 'Finished optimizing files'
+                callback?()
+              else
+                @emit 'log', "Waiting for #{todo} files to optimize"
+    else
+      callback?()
 
   applyTimestamps: ->
-    for referencesGlob, referencersGlob of @timestamp
-      @emit 'log', "Will rename #{referencesGlob} and update #{referencersGlob}"
-      references = glob.sync path.resolve @output, ".#{path.sep}#{referencesGlob}"
-      referencers = glob.sync path.resolve @output, ".#{path.sep}#{referencersGlob}"
+    if @timestamp
+      for referencesGlob, referencersGlob of @timestamp
+        @emit 'log', "Will rename #{referencesGlob} and update #{referencersGlob}"
+        references = glob.sync path.resolve @output, ".#{path.sep}#{referencesGlob}"
+        referencers = glob.sync path.resolve @output, ".#{path.sep}#{referencersGlob}"
 
-      changes = {}
+        changes = {}
 
-      for reference in references
-        changes[reference] = @renameFile reference
+        for reference in references
+          changes[reference] = @renameFile reference
 
-      for referencer in referencers
-        @fixReferences referencer, changes
+        for referencer in referencers
+          @fixReferences referencer, changes
 
   renameFile: (filename) ->
     stampedFilename = @stampFilename filename
