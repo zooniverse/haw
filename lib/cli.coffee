@@ -54,7 +54,7 @@ showOutput = (thing) ->
   unless configuration.quiet
     thing.on 'info', console.log.bind console
     thing.on 'warn', console.log.bind console, chalk.red 'WARN'
-    thing.on 'err', (messages...) -> console.log chalk.red "# #{messages.join ' '}"
+    thing.on 'error', (messages...) -> console.log chalk.red "# #{messages.join ' '}"
 
   if configuration.verbose
     thing.on 'log', (messages...) -> console.log chalk.gray "# #{messages.join ' '}"
