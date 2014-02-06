@@ -24,7 +24,6 @@ defaultConfig =
   compile:
     js: js: (sourceFile, callback) ->
       browserify = require 'browserify'
-      ecoify = require 'ecoify'
       uglifyify = require 'uglifyify'
       makeTransform = require './make-browserify-transform'
       CoffeeScript = require 'coffee-script'
@@ -35,7 +34,8 @@ defaultConfig =
       b.transform makeTransform ['.coffee', '.litcoffee'], (file, content, callback) ->
         callback null, CoffeeScript.compile content
 
-      b.transform ecoify
+      b.transform makeTransform ['.eco'], (file, content, callback) ->
+        callback null, "module.exports = #{eco.precompile content}"
 
       if typeof @build is 'function'
         b.transform uglifyify
