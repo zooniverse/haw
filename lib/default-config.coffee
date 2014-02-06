@@ -23,14 +23,22 @@ defaultConfig =
   # Compile generated files (by source -> request extension).
   compile:
     js: js: (sourceFile, callback) ->
-      webmake = require 'webmake'
-      webmakeEco = require './webmake-eco'
+      browserify = require 'browserify'
+      makeTransform = require './make-browserify-transform'
+      CoffeeScript = require 'coffee-script'
+      eco = require 'eco'
 
-      webmake sourceFile,
-        ext: ['coffee', webmakeEco]
-        sourceMap: true unless @webmakeOptions?.sourceMap is false
-        ignoreErrors: true unless @webmakeOptions?.ignoreErrors is false
-        callback
+      b = browserify extensions: ['.coffee', '.eco']
+
+      b.transform makeTransform ['.coffee', '.litcoffee'], (file, content, callback) ->
+        callback null, CoffeeScript.compile content
+
+      b.transform makeTransform '.eco', (file, content, callback) ->
+        callback null, "module.exports = #{eco.precompile content}"
+
+      b.add sourceFile
+
+      b.bundle callback
 
     coffee: js: -> @compile.js.js.apply @, arguments
 
