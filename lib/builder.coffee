@@ -5,7 +5,6 @@ wrench = require 'wrench'
 glob = require 'glob'
 path = require 'path'
 fs = require 'fs'
-ASYNC_IDENTITY = require './async-identity'
 
 class Builder extends EventEmitter
   root: defaultConfig.root

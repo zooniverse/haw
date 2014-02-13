@@ -58,7 +58,8 @@ defaultConfig =
 
       b.bundle callback
 
-    coffee: js: -> @compile.js.js.apply @, arguments
+    coffee: js: ->
+      @compile.js.js.apply @, arguments
 
     styl: css: (sourceFile, callback) ->
       fs = require 'fs'

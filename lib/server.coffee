@@ -5,7 +5,6 @@ glob = require 'glob'
 path = require 'path'
 fs = require 'fs'
 mime = require 'mime'
-ASYNC_IDENTITY = require './async-identity'
 
 class Server extends EventEmitter
   port: defaultConfig.port
@@ -85,7 +84,7 @@ class Server extends EventEmitter
           @emit 'log', "Found compiler for #{generatedFile} (#{srcExt}->#{reqExt})"
         else
           @emit 'log', "No compiler found for #{generatedFile} (#{srcExt}->#{reqExt})"
-          compiler ?= ASYNC_IDENTITY
+          compiler ?= fs.readFile
 
         compiler.call @, source, (error, content) =>
           if error?
