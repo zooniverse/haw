@@ -17,11 +17,25 @@ defaultConfig =
 
   # (Generated file path): (Source file)
   generate:
+    '/index.html': 'public/index.{html,eco}'
     '/main.js': 'app/main.{js,coffee}'
     '/main.css': 'css/main.{css,styl}'
 
   # Compile generated files (by source -> request extension).
   compile:
+    eco: html: (sourceFile, callback) ->
+      fs = require 'fs'
+      eco = require 'eco'
+
+      fs.readFile sourceFile, (error, content) =>
+        unless error?
+          try
+            rendered = eco.render content.toString(), @
+          catch e
+            error = e
+
+        callback error, rendered
+
     js: js: (sourceFile, callback) ->
       browserify = require 'browserify'
       makeTransform = require './make-browserify-transform'
