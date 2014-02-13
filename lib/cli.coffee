@@ -1,7 +1,7 @@
 optimist = require 'optimist'
 defaultConfig = require './default-config'
 path = require 'path'
-chalk = require 'chalk'
+showOutput = require './show-output'
 
 optimist.usage '''
   Usage:
@@ -49,15 +49,6 @@ configuration[property] = value for property, value of options
 
 command = 'help' if options.help
 command = 'version' if options.version or (options.v and not command)
-
-showOutput = (thing) ->
-  unless configuration.quiet
-    thing.on 'info', console.log.bind console
-    thing.on 'warn', console.log.bind console, chalk.red 'WARN'
-    thing.on 'error', (messages...) -> console.log chalk.red "# #{messages.join ' '}"
-
-  if configuration.verbose
-    thing.on 'log', (messages...) -> console.log chalk.gray "# #{messages.join ' '}"
 
 switch command
   when 's', 'serve', 'server'
