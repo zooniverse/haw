@@ -50,6 +50,8 @@ defaultConfig =
         eco = require 'eco'
         callback null, "module.exports = #{eco.precompile content};"
 
+      @modifyBrowserify? b
+
       if typeof @build is 'function'
         uglifyify = require 'uglifyify'
         b.transform uglifyify
@@ -80,6 +82,8 @@ defaultConfig =
 
           unless @stylusOptions?.includeCss is false
             styl.set 'include css', true
+
+          @modifyStylus? styl
 
           try
             rendered = styl.render()
