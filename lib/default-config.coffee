@@ -48,7 +48,13 @@ defaultConfig =
 
       b.transform makeTransform '.eco', (file, content, callback) ->
         eco = require 'eco'
-        callback null, "module.exports = #{eco.precompile content};"
+
+        try
+          rendered = "module.exports = #{eco.precompile content};"
+        catch e
+          error = e
+
+        callback error, rendered
 
       @modifyBrowserify? b
 
