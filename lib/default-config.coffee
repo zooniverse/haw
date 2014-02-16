@@ -40,7 +40,7 @@ defaultConfig =
       browserify = require 'browserify'
       makeTransform = require './make-browserify-transform'
 
-      b = browserify extensions: ['.coffee', '.eco']
+      b = browserify extensions: ['.coffee', '.eco', '.md', '.markdown']
 
       b.transform makeTransform '.coffee', (file, content, callback) ->
         CoffeeScript = require 'coffee-script'
@@ -61,6 +61,16 @@ defaultConfig =
           error = e
 
         callback error, rendered
+
+      b.transform makeTransform ['.md', '.markdown'], (file, content, callback) ->
+        marked = require 'marked'
+
+        try
+          parsed = "module.exports = unescape('#{escape marked.parse content}');"
+        catch e
+          error = e
+
+        callback error, parsed
 
       @modifyBrowserify? b
 
