@@ -44,7 +44,13 @@ defaultConfig =
 
       b.transform makeTransform '.coffee', (file, content, callback) ->
         CoffeeScript = require 'coffee-script'
-        callback null, CoffeeScript.compile content
+
+        try
+          compiled = CoffeeScript.compile content
+        catch e
+          error = e
+
+        callback error, CoffeeScript.compile content
 
       b.transform makeTransform '.eco', (file, content, callback) ->
         eco = require 'eco'
