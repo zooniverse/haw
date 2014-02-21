@@ -26,7 +26,7 @@ options = optimist.options({
 configuration = {}
 configuration[property] = value for property, value of defaultConfig
 
-require 'coffee-script'
+require 'coffee-script/register'
 
 configFile = options.config || configuration.config
 
