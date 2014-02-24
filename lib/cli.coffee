@@ -30,13 +30,20 @@ require 'coffee-script/register'
 
 configFile = options.config || configuration.config
 
+configFile = try
+  require.resolve configFile
+catch e
+  try
+    require.resolve path.resolve configFile
+  catch e
+    null
+
 if configFile?
   try
     config = require configFile
-
-  unless config?
-    try
-      config = require path.resolve configFile
+  catch e
+    console.error e
+    process.exit 1
 
   if typeof config is 'function'
     config.call configuration, configuration
