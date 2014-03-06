@@ -46,7 +46,7 @@ if configFile?
     process.exit 1
 
   if typeof config is 'function'
-    config.call configuration, configuration
+    config.call configuration, options
   else
     configuration[property] = value for property, value of config
 
