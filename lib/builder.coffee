@@ -56,15 +56,20 @@ class Builder extends EventEmitter
 
   copyMountedDirectories: ->
     for sourcesGlob, destination of @mount
-      @emit 'log', "Will copy directories at #{sourcesGlob} to #{destination}"
       destination = path.resolve @output, ".#{path.sep}#{destination}"
       sources = glob.sync path.resolve @root, sourcesGlob
       for source in sources
-        destrinationDir = path.dirname destination
-        @emit 'log', "Creating directory #{destrinationDir}"
-        wrench.mkdirSyncRecursive path.dirname destination
-        @emit 'info', "Copying #{source} into #{destination}"
-        wrench.copyDirSyncRecursive source, destination
+        @emit 'log', "Will copy #{source} into #{destination}"
+        files = glob.sync path.resolve source, '{*,**/*}'
+        for file in files
+          continue if fs.statSync(file).isDirectory()
+          newFile = path.resolve destination, path.relative source, file
+          newFileDir = path.dirname newFile
+          unless fs.existsSync newFileDir
+            @emit 'log', "Creating directory #{newFileDir}"
+            wrench.mkdirSyncRecursive newFileDir
+          @emit 'info', "Copying #{file} into #{newFile}"
+          fs.writeFileSync newFile, fs.readFileSync file
 
   generateFiles: (callback) ->
     todo = 0
