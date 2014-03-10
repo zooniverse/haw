@@ -42,25 +42,9 @@ defaultConfig =
 
       b = browserify extensions: ['.coffee', '.eco', '.md', '.markdown']
 
-      b.transform makeTransform '.coffee', (file, content, callback) ->
-        CoffeeScript = require 'coffee-script'
+      b.transform require 'coffeeify'
 
-        try
-          compiled = CoffeeScript.compile content
-        catch e
-          error = e
-
-        callback error, CoffeeScript.compile content
-
-      b.transform makeTransform '.eco', (file, content, callback) ->
-        eco = require 'eco'
-
-        try
-          rendered = "module.exports = #{eco.precompile content};"
-        catch e
-          error = e
-
-        callback error, rendered
+      b.transform require 'browserify-eco'
 
       b.transform makeTransform ['.md', '.markdown'], (file, content, callback) ->
         marked = require 'marked'
