@@ -76,7 +76,7 @@ class CLI extends Command
 
   build: (options) ->
     Builder = require '../lib/builder'
-    builder = new Builder configuration
+    builder = new Builder options
     showOutput builder
     builder.build()
 
