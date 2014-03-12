@@ -1,105 +1,83 @@
-optimist = require 'optimist'
-defaultConfig = require './default-config'
+Command = require './command'
+
 path = require 'path'
 showOutput = require './show-output'
 
-optimist.usage '''
-  Usage:
+defaultConfig = require './default-config'
+
+class CLI extends Command
+  configFiles: [
+    path.resolve process.env.HOME, '.config', 'haw'
+    path.resolve process.env.HOME, '.haw'
+    'slug'
+  ]
+
+  usage: '''
     haw init
     haw init controller SomeController
     haw serve --port 1234
     haw build --config ./package.json --output ./build
-'''
+  '''
 
-options = optimist.options({
-  c: alias: 'config', description: 'Configuration file'
-  r: alias: 'root', description: 'Root from which to look for files'
-  p: alias: 'port', description: 'Port on which to run the server'
-  o: alias: 'output', description: 'Directory in which to build the site'
-  f: alias: 'force', description: 'Overwrite any existing output directory'
-  q: alias: 'quiet', description: 'Don\'t show any working info'
-  v: alias: 'verbose', description: 'Show lots of working info'
-  h: alias: 'help', description: 'Print some help'
-  version: description: 'Print the version number'
-}).argv
+  options: [
+    ['config',  'c', 'Configuration file']
+    ['root',    'r', 'Root from which to look for files', defaultConfig.root]
+    ['port',    'p', 'Port on which to run the server', defaultConfig.port]
+    ['output',  'o', 'Directory in which to build the site', defaultConfig.output]
+    ['force',   'f', 'Overwrite any existing output directory', defaultConfig.force]
+    ['quiet',   'q', 'Don\'t show any working info', defaultConfig.quiet]
+    ['verbose', 'Q', 'Show lots of working info', defaultConfig.verbose]
+    ['help',    'h', 'Print some help']
+    ['version', 'v', 'Print the version number']
+  ]
 
-configuration = {}
-configuration[property] = value for property, value of defaultConfig
+  modifyOptions: (options) ->
+    super
+    options._.unshift 'version' if options.version
 
-require 'coffee-script/register'
+  mergeConfigs: (configs..., options) ->
+    configs.unshift defaultConfig
+    configs.push options.config if 'config' of options
+    super configs..., options
 
-configFile = options.config || configuration.config
+  version: ->
+    console.log require(path.join __dirname, '..', 'package').version
 
-configFile = try
-  require.resolve configFile
-catch e
-  try
-    require.resolve path.resolve configFile
-  catch e
-    null
-
-if configFile?
-  try
-    config = require configFile
-  catch e
-    console.error e
-    process.exit 1
-
-  if typeof config is 'function'
-    config.call configuration, options
-  else
-    configuration[property] = value for property, value of config
-
-configuration[property] = value for property, value of options
-
-[command, commandArgs...] = options._
-
-command = 'help' if options.help
-command = 'version' if options.version or (options.v and not command)
-
-switch command
-  when 's', 'serve', 'server'
+  serve: ([port]..., options) ->
     Server = require './server'
     exec = require 'easy-exec'
-    port = commandArgs[0] ? configuration.port
-    server = new Server configuration
+
+    server = new Server options
     showOutput server
+
+    server.serve port
 
     console.log 'Hit "o" to open your browser.'
     process.stdin.setRawMode true
     process.stdin.resume()
+
     process.stdin.on 'data', (data) ->
       switch data.toString()
         when 'o'
           console.log 'Opening browser'
-          exec "open http://localhost:#{configuration.port}"
-        when 'q', '\u0003'
+          exec "open http://localhost:#{port}"
+        when 'q', '\u0003' # Ctrl-C
           console.log 'Goodbye'
           process.exit()
 
-    server.serve port
+  # init: ([type, name]..., options) ->
+  #   init = require '../lib/init'
+  #   type = commandArgs.shift()
+  #   name = commandArgs.join ' '
+  #   init type, name, configuration, (error, created) ->
+  #     if error?
+  #       console.log error
+  #       process.exit 1
 
-  when 'i', 'init'
-    init = require '../lib/init'
-    type = commandArgs.shift()
-    name = commandArgs.join ' '
-    init type, name, configuration, (error, created) ->
-      if error?
-        console.log error
-        process.exit 1
-
-  when 'b', 'build', 'builder'
+  build: (options) ->
     Builder = require '../lib/builder'
     builder = new Builder configuration
     showOutput builder
     builder.build()
 
-  when 'h', 'help'
-    optimist.showHelp()
-
-  when 'v', 'version'
-    console.log (require path.join __dirname, '..', 'package').version
-
-  else
-    optimist.showHelp()
-    process.exit 1
+module.exports = CLI

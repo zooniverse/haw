@@ -1,6 +1,4 @@
 defaultConfig =
-  config: 'slug'
-
   root: process.cwd()
 
   port: 2217
