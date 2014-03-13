@@ -1,5 +1,6 @@
 minimist = require 'minimist'
 path = require 'path'
+columnify = require 'columnify'
 
 class Command
   configFiles: null
@@ -60,10 +61,20 @@ class Command
     @help()
 
   help: ->
+    optionDefs = for [long, short, description, defaultValue] in @options
+      s: ("-#{short}" if short)
+      l: ("--#{long}" if long)
+      d: (description if description)
+      v: ("Default: #{defaultValue}" if defaultValue?)
+
+    optionsInColumns = columnify optionDefs,
+      include: ['s', 'l', 'd', 'v']
+
+    # Remove the column headers.
+    optionsInColumns = optionsInColumns.split('\n').slice(1).join '\n'
+
     console.log @usage if @usage
-    for [long, short, description, defaultValue] in @options
-      # TODO: Line up these columns.
-      console.log "-#{short} --#{long} #{description}"
+    console.log optionsInColumns unless @options.length is 0
 
   'debug-options': ->
     console.log arguments...
