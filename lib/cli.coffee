@@ -44,6 +44,8 @@ class CLI extends Command
     console.log require(path.join __dirname, '..', 'package').version
 
   serve: ([port]..., options) ->
+    port ?= options.port
+
     Server = require './server'
     exec = require 'easy-exec'
 
@@ -60,7 +62,7 @@ class CLI extends Command
       switch data.toString()
         when 'o'
           console.log 'Opening browser'
-          exec "open http://localhost:#{port}"
+          exec "open http://localhost:#{port}/index.html"
         when 'q', '\u0003' # Ctrl-C
           console.log 'Goodbye'
           process.exit()
