@@ -5,33 +5,53 @@ npm install haw
 haw help
 ```
 
-All commands can be given a `--config` option. By default, haw will attempt to load `slug.{json,js,coffee}` in the current working directory.
+Configuration
+=============
 
-`haw init [type] [name]`
-========================
+Haw will load configurations from `~/.config/haw.{json,js,coffee}`, `~/.haw.{json,js,coffee}`, `./slug.{json,js.coffee}` in that order. Don't put project-important stuff in your user config files, because then nobody else will get them.
 
-This generates folders and files based on the `init` property of your config. By default, it builds out MVC-ish kinda stuff (defined in `lib/default-inits`).
+If another configuration file is specified with `--config ./special-haw-config.json`, e.g., that will be loaded last. Might be useful to have a dev/production haw config; might not.
 
-You can specify a type of thing to init, like, a controller or a model or what-have-you, and a name to pass into its templates. Running `haw init controller SomeController` will build out the structure defined in `(config).init.controller` with `"SomeController"` available in its templates as `name`. Templates are in Handlebars.
+Configuration properties
+------------------------
 
-If not given a type and name, `haw init` will build the structure defined in `(config).init.default`.
+**root**: Default is the current working directory.
 
-`haw serve [port]`
-==================
+**port**: When serving, this is where the server will run. Default is `2217`.
 
-This runs a development server.
+**output**: This is where builds go. Default is "build" in the current working directory.
 
-By default, it'll serve static files out of the `public` directory. You can change this with the `mount` config property.
+**force**: When building, overwrite any existing files at the build directory. Default is `false`.
 
-By default, it'll generate `/main.js` from `app/main.coffee` and provide `require` function to load modules.
+**quiet**: Don't log anything. Default is `false`.
 
-By default, it'll generate `/main.css` from `css/main.styl`, inlining in any `@import` statements.
+**verbose**: Log extra debugging info. Default is `false`.
 
-Change these with the `generate` config property, and modify the `compile` config properties to change how things are compiled.
+**mount**: A map of globs matching source directories in the `root` to their destinations. When serving, the source directories are available at the destination path URL. When building, the source directories are copied to the destination path. By default, "public" and "static" are mounted at the root.
 
-`haw build [output]`
-====================
+**generate**: A map of "virtual files" to globs matching the source files to generate them. When serving, these are recreated every time they're accessed. When building, they're created at the `output` directory. Default is:
 
-This will copy your `(config).mount` directories into a build directory, generate files in `(config).generate`, optimize JS, CSS, and images in the build directory, timestamp filenames and rename their references as defined in `(config).timestamp`.
+```
+{
+  '/index.html': 'public/index.{html,eco}',
+  '/main.js': 'app/main.{js,coffee}',
+  '/main.css': 'css/main.{css,styl}'
+}
+```
 
-Push the build directory to S3 or whatever and you've got yourself a web site.
+**compile**: A map of source extensions to futher maps of destination extensions to async functions handling the conversion. Generated "virtual files" have their source files run through these. By default, the follow conversions are included: eco to html, js to js (with `require`s resolved with browserify), coffee to js, and styl to css.
+
+It's worth noting that I'm not super happy with the `generate`/`compile` setup. It'll probably change in the future.
+
+**optimize**: A map of file paths (rooted from the `output` directory) to optimization functions to run after a build. By default, the following will be optimized: `/main.js`, `/main.css`, `{*,**/*}.jpg`, and `{*,**/*}.png`.
+
+**timestamp**: A map of static files to files referencing them. The static files will be renamed with the `timestampFilename` function and the files referencing them will be updated to point to the new files. By default files matching `/main.{css,js}` are renamed and the content of `index.html` is updated.
+
+**stampFilename**: The function used to rename timestamped files. By default it appends a short hash.
+
+Commands
+========
+
+`haw serve` runs a development server.
+
+`haw build` builds the site. Push the build directory to S3 or whatever and you've got yourself a web site.
