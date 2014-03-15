@@ -2,6 +2,10 @@ Handlebars = require 'handlebars'
 path = require 'path'
 fs = require 'fs'
 
+BufferCtor = fs.readFileSync(module.filename).constructor
+
+# TODO: This whole thing needs a great big cleanup.
+
 split = (string) ->
   parts = string.split /\W+|([A-Z][a-z]+)/
   part for part in parts when !!part
@@ -31,8 +35,17 @@ Handlebars.registerHelper 'dashed', (string) ->
 
 makeStructure = (dirs, structure, context) ->
   for name, value of structure
-    name = (Handlebars.compile name) context
-    if typeof value is 'string'
+
+    if value instanceof BufferCtor
+      name = (Handlebars.compile name) context
+      filename = path.resolve dirs..., name
+      console.log 'Write', filename
+      if fs.existsSync filename
+        console.log "Already exists, skipped #{filename}"
+      else
+        fs.writeFileSync filename, value
+
+    else if typeof value is 'string'
       filename = path.resolve dirs..., name
       value = ((Handlebars.compile value) context)
       value += '\n' if value
@@ -41,6 +54,7 @@ makeStructure = (dirs, structure, context) ->
         console.log "Already exists, skipped #{filename}"
       else
         fs.writeFileSync filename, value
+
     else
       dirs.push name
       dirpath = path.resolve dirs...
