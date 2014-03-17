@@ -25,7 +25,7 @@ defaultsInits =
         <html>
           <head>
             <meta charset="utf-8" />
-            <title>{{name}}</title>
+            <title><%= @title || 'Untitled project' %></title>
             <link rel="stylesheet" href="./main.css" />
           </head>
 
@@ -41,16 +41,16 @@ defaultsInits =
   controller:
     app:
       controllers:
-        '{{dashed name}}.coffee': '''
-          class {{classCase name}}
-            className: '{{dashed name}}'
+        '<%= @dashed @name %>.coffee': '''
+          class <%= @classCase @name %>
+            className: '<%= @dashed @name %>'
 
-          module.exports = {{classCase name}}
+          module.exports = <%= @classCase @name %>
         '''
 
     css:
-      '{{dashed name}}.styl': '''
-        .{{dashed name}}
+      '<%= @dashed @name %>.styl': '''
+        .<%= @dashed @name %>
           color: inherit
       '''
 

@@ -1,74 +1,83 @@
-Handlebars = require 'handlebars'
-path = require 'path'
 fs = require 'fs'
+{EventEmitter} = require 'events'
+eco = require 'eco'
+path = require 'path'
 
+# TODO: Find out how to reference this without creating a new one.
 BufferCtor = fs.readFileSync(module.filename).constructor
 
-# TODO: This whole thing needs a great big cleanup.
+class Initializer extends EventEmitter
+  constructor: (config) ->
+    super
+    @[property] = value for property, value of config
 
-split = (string) ->
-  parts = string.split /\W+|([A-Z][a-z]+)/
-  part for part in parts when !!part
+  split: (string) ->
+    parts = string.split(/\W+|([A-Z][a-z]+)/).filter Boolean
+    @emit 'log', "Spit #{JSON.stringify string} into #{JSON.stringify parts}"
+    parts
 
-Handlebars.registerHelper 'camelCase', (string) ->
-  parts = split string
+  camelCase: (string) ->
+    parts = @split string
 
-  parts = for part, i in parts
-    if i is 0
-      part.toLowerCase()
-    else
+    parts = for part, i in parts
+      if i is 0
+        part.toLowerCase()
+      else
+        part.charAt(0).toUpperCase() + part[1...].toLowerCase()
+
+    newString = parts.join ''
+    @emit 'log', "Camel-cased #{JSON.stringify string} into #{JSON.stringify newString}"
+    newString
+
+  classCase: (string) ->
+    parts = @split string
+    parts = for part, i in parts
       part.charAt(0).toUpperCase() + part[1...].toLowerCase()
 
-  parts.join ''
+    newString = parts.join ''
+    @emit 'log', "Class-cased #{JSON.stringify string} into #{JSON.stringify newString}"
+    newString
 
-Handlebars.registerHelper 'classCase', (string) ->
-  parts = split string
+  dashed: (string) ->
+    parts = @split string
+    newString = parts.join('-').toLowerCase()
+    @emit 'log', "Dashed #{JSON.stringify string} into #{JSON.stringify newString}"
+    newString
 
-  parts = for part, i in parts
-    part.charAt(0).toUpperCase() + part[1...].toLowerCase()
+  makeStructure: (structure, directories = []) ->
+    for name, value of structure
+      name = eco.render name, this
+      currentPath = path.resolve directories..., name
 
-  parts.join ''
+      if typeof value is 'function'
+        value = value.call this
 
-Handlebars.registerHelper 'dashed', (string) ->
-  parts = split string
-  parts.join('-').toLowerCase()
+      if typeof value is 'string'
+        value = "#{eco.render value, this}\n"
 
-makeStructure = (dirs, structure, context) ->
-  for name, value of structure
+      if typeof value is 'string' or value instanceof BufferCtor
+        if fs.existsSync currentPath
+          @emit 'info', "Skipping #{currentPath} (already exists)"
+        else
+          @emit 'info', "Writing #{currentPath}"
+          fs.writeFileSync currentPath, value
 
-    if value instanceof BufferCtor
-      name = (Handlebars.compile name) context
-      filename = path.resolve dirs..., name
-      console.log 'Write', filename
-      if fs.existsSync filename
-        console.log "Already exists, skipped #{filename}"
       else
-        fs.writeFileSync filename, value
+        directories.push name
+        unless fs.existsSync currentPath
+          @emit 'info', "Creating directory #{currentPath}"
+          fs.mkdirSync currentPath
+        @makeStructure value, directories
+        directories.pop()
 
-    else if typeof value is 'string'
-      filename = path.resolve dirs..., name
-      value = ((Handlebars.compile value) context)
-      value += '\n' if value
-      console.log 'Write', filename
-      if fs.existsSync filename
-        console.log "Already exists, skipped #{filename}"
-      else
-        fs.writeFileSync filename, value
+  initialize: (type = 'default') ->
+    type ?= 'default'
+
+    if type of @init
+      fs.mkdirSync path.resolve @root unless fs.existsSync @root
+      @makeStructure @init[type], [@root]
 
     else
-      dirs.push name
-      dirpath = path.resolve dirs...
-      console.log 'Mkdir', dirpath
-      try fs.mkdirSync dirpath
-      makeStructure dirs, value, context
-      dirs.pop()
+      @emit 'error', "No initializer found for '#{type}'"
 
-init = (type = 'default', name, options, callback) ->
-  if type of options.init
-    try fs.mkdirSync path.resolve options.root
-    makeStructure [options.root], options.init[type], {name, options}
-
-  else
-    callback "No initializer found for \"#{type}\""
-
-module.exports = init
+module.exports = Initializer

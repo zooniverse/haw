@@ -67,10 +67,11 @@ class CLI extends Command
           console.log 'Goodbye'
           process.exit()
 
-  init: ([type, name]..., options) ->
-    init = require '../lib/init'
-    init type, name, options, (error, created) ->
-      throw error if error?
+  init: ([type]..., options) ->
+    Initializer = require './init'
+    initializer = new Initializer options
+    showOutput initializer
+    initializer.initialize type, options
 
   build: (options) ->
     Builder = require '../lib/builder'
