@@ -43,6 +43,12 @@ class CLI extends Command
   version: ->
     console.log require(path.join __dirname, '..', 'package').version
 
+  initialize: ([type]..., options) ->
+    Initializer = require './initializer'
+    initializer = new Initializer options
+    showOutput initializer
+    initializer.initialize type, options
+
   serve: ([port]..., options) ->
     port ?= options.port
 
@@ -66,12 +72,6 @@ class CLI extends Command
         when 'q', '\u0003' # Ctrl-C
           console.log 'Goodbye'
           process.exit()
-
-  init: ([type]..., options) ->
-    Initializer = require './init'
-    initializer = new Initializer options
-    showOutput initializer
-    initializer.initialize type, options
 
   build: (options) ->
     Builder = require '../lib/builder'
