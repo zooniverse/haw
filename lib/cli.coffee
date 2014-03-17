@@ -79,4 +79,10 @@ class CLI extends Command
     showOutput builder
     builder.build()
 
+  # Command shortcuts:
+  @::i = @::initialize
+  @::init = @::initialize
+  @::s = @::serve
+  @::b = @::build
+
 module.exports = CLI
