@@ -60,18 +60,20 @@ class CLI extends Command
 
     server.serve port
 
-    console.log 'Hit "o" to open your browser.'
-    process.stdin.setRawMode true
-    process.stdin.resume()
+    try
+      process.stdin.setRawMode true
+      process.stdin.resume()
 
-    process.stdin.on 'data', (data) ->
-      switch data.toString()
-        when 'o'
-          console.log 'Opening browser'
-          exec "open http://localhost:#{port}/index.html"
-        when 'q', '\u0003' # Ctrl-C
-          console.log 'Goodbye'
-          process.exit()
+      process.stdin.on 'data', (data) ->
+        switch data.toString()
+          when 'o'
+            console.log 'Opening browser'
+            exec "open http://localhost:#{port}/index.html"
+          when 'q', '\u0003' # Ctrl-C
+            console.log 'Goodbye'
+            process.exit()
+
+      console.log 'Hit "o" to open your browser.'
 
   build: (options) ->
     Builder = require '../lib/builder'
