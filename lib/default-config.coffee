@@ -63,7 +63,7 @@ defaultConfig =
       b.add sourceFile
 
       bundleOpts = @bundleOptions or {}
-        
+
       b.bundle bundleOpts, callback
 
     coffee: js: ->
