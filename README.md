@@ -49,6 +49,8 @@ It's worth noting that I'm not super happy with the `generate`/`compile` setup. 
 
 **stampFilename**: The function used to rename timestamped files. By default it appends a short hash.
 
+**bundleOptions**: A map of options to pass to `browserify.bundle` the most common value will be {"debug": true} to generate source maps for your project. See the [browserify docs](https://github.com/substack/node-browserify#bbundleopts-cb) for more options. 
+
 Commands
 ========
 
