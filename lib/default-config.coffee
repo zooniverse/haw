@@ -119,24 +119,22 @@ defaultConfig =
           fs.writeFile filename, min, callback
 
     '{*,**/*}.jpg': (filename, callback) ->
-      which = require 'which'
-      exec = require 'easy-exec'
+      Imagemin = require 'image-min'
 
-      which 'jpegtran', (error) ->
-        if error?
-          callback 'Missing jpegtran! Try `brew install jpeg`.'
-        else
-          exec "jpegtran -copy none -progressive -outfile #{filename} #{filename}", callback
+      imagemin = new Imagemin()
+        .src filename
+        .dest filename
+        .use Imagemin.jpegtran progressive: true
+        .optimize callback
 
     '{*,**/*}.png': (filename, callback) ->
-      which = require 'which'
-      exec = require 'easy-exec'
+      Imagemin = require 'image-min'
 
-      which 'optipng', (error) ->
-        if error?
-          callback 'Missing optipng! Try `brew install optipng`.'
-        else
-          exec "optipng -strip all -o7 -quiet #{filename}", callback
+      imagemin = new Imagemin()
+        .src filename
+        .dest filename
+        .use Imagemin.optipng optimizationLevel: 7
+        .optimize callback
 
   # Modify file names, update references to them
   # (File with references): (Files to timestamp)
