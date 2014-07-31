@@ -5,6 +5,7 @@ wrench = require 'wrench'
 glob = require 'glob'
 path = require 'path'
 fs = require 'fs'
+async = require 'async'
 
 class Builder extends EventEmitter
   root: defaultConfig.root
@@ -16,6 +17,7 @@ class Builder extends EventEmitter
   optimize: defaultConfig.optimize
   timestamp: defaultConfig.timestamp
   stampFilename: defaultConfig.stampFilename
+  limit: defaultConfig.limit
 
   constructor: (config) ->
     super
@@ -107,23 +109,20 @@ class Builder extends EventEmitter
     if @optimize
       todo = 0
       for pattern, optimizer of @optimize
+        todo += 1
         @emit 'log', "Will optimize #{pattern}"
+
         matches = glob.sync path.resolve @output, ".#{path.sep}#{pattern}"
-        for filename in matches
-          todo += 1
-          @emit 'info', "Optimizing #{filename}"
-          optimizer.call @, filename, (error) =>
+        matchWithOptimizer = matches.map (match, i) ->
+          { filename: match, optimizer }
+
+        async.eachLimit matchWithOptimizer, @limit, @_optimizeFile, (error) =>
+          unless error?
             todo -= 1
-            if error?
-              @emit 'error', "Error optimizing #{filename}:", error
-              callback? error
+            if todo is 0
+              callback?()
             else
-              @emit 'log', "Optimized #{filename} successfully"
-              if todo is 0
-                @emit 'log', 'Finished optimizing files'
-                callback?()
-              else
-                @emit 'log', "Waiting for #{todo} files to optimize"
+              @emit 'log', "Finished optimizing all #{pattern}"
     else
       callback?()
 
@@ -160,5 +159,15 @@ class Builder extends EventEmitter
       content = "#{content}".replace relativeOriginal, relativeTimestamped
     fs.writeFileSync filename, content
     @emit 'log', "Updated references in #{filename} successfully"
+
+  _optimizeFile: ({filename, optimizer}, callback) =>
+    @emit 'info', "Optimizing #{filename}"
+    optimizer.call @, filename, (error) =>
+      if error?
+        @emit 'error', "Error optimizing #{filename}:", error
+        callback error, null
+      else
+        @emit 'log', "Optimized #{filename} successfully"
+        callback null, true
 
 module.exports = Builder

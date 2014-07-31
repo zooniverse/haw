@@ -5,6 +5,7 @@
     "haw": "./bin/haw"
   },
   "dependencies": {
+    "async": "~0.9.0",
     "browserify": "~3.32.0",
     "browserify-eco": "~0.2.4",
     "chalk": "~0.4.0",

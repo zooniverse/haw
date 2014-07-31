@@ -99,6 +99,8 @@ defaultConfig =
 
   # Optimize files after a build.
   # Paths are rooted at the build directory.
+  limit: 3
+
   optimize:
     '/main.js': (file, callback) ->
       UglifyJS = require 'uglify-js'
