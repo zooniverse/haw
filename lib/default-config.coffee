@@ -121,22 +121,28 @@ defaultConfig =
           fs.writeFile filename, min, callback
 
     '{*,**/*}.jpg': (filename, callback) ->
-      Imagemin = require 'image-min'
-
-      imagemin = new Imagemin()
-        .src filename
-        .dest filename
-        .use Imagemin.jpegtran progressive: true
-        .optimize callback
+      imagemin = require 'imagemin'
+      imageminJpegtran = require 'imagemin-jpegtran'
+      
+      imagemin [filename], @output, [
+          plugins: [
+            imageminJpegtran progressive: true
+          ]
+        ]
+      .then (output) ->
+        callback()
 
     '{*,**/*}.png': (filename, callback) ->
-      Imagemin = require 'image-min'
-
-      imagemin = new Imagemin()
-        .src filename
-        .dest filename
-        .use Imagemin.optipng optimizationLevel: 7
-        .optimize callback
+      imagemin = require 'imagemin'
+      imageminOptipng = require 'imagemin-optipng'
+      
+      imagemin [filename], @output, [
+          plugins: [
+            imageminOptipng optimizationLevel: 7
+          ]
+        ]
+      .then (output) ->
+        callback()
 
   # Modify file names, update references to them
   # (File with references): (Files to timestamp)
